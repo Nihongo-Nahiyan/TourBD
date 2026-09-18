@@ -1612,6 +1612,656 @@ td{
 
 
 }
+/* =========================================================
+   ADMIN PACKAGES PAGE - FIGMA DESIGN
+========================================================= */
+
+
+/* SEARCH + ADD PACKAGE AREA */
+
+.package-toolbar{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:30px;
+
+    margin-top:30px;
+
+    margin-bottom:22px;
+
+}
+
+
+.package-search-form{
+
+    width:405px;
+
+    margin:0;
+
+}
+
+
+.package-search-form input{
+
+    width:100%;
+
+    height:62px;
+
+    padding:0 20px;
+
+    background:white;
+
+    border:1px solid #dedbd8;
+
+    border-radius:11px;
+
+    font-size:17px;
+
+    color:#444;
+
+}
+
+
+.package-search-form input:focus{
+
+    outline:none;
+
+    border-color:#07877e;
+
+}
+
+
+.package-search-form input::placeholder{
+
+    color:#999;
+
+}
+
+
+
+/* ADD PACKAGE BUTTON */
+
+.package-add-button{
+
+    display:inline-block;
+
+    background:#12867d;
+
+    color:white;
+
+    padding:17px 31px;
+
+    border-radius:10px;
+
+    font-size:17px;
+
+    font-weight:bold;
+
+}
+
+
+.package-add-button:hover{
+
+    background:#08756d;
+
+    color:white;
+
+}
+
+
+
+/* =========================================================
+   PACKAGE TABLE
+========================================================= */
+
+
+.figma-package-table{
+
+    width:100%;
+
+    background:white;
+
+    border:1px solid #e2dfdc;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    margin-bottom:35px;
+
+}
+
+
+.figma-package-table table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    background:white;
+
+}
+
+
+/* TABLE HEADER */
+
+.figma-package-table thead{
+
+    background:#f5f5f4;
+
+}
+
+
+.figma-package-table th{
+
+    padding:20px 22px;
+
+    text-align:left;
+
+    color:#514a45;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    white-space:nowrap;
+
+}
+
+
+/* TABLE BODY */
+
+.figma-package-table td{
+
+    padding:22px;
+
+    border-bottom:1px solid #ebe7e4;
+
+    vertical-align:middle;
+
+    color:#111;
+
+    font-size:16px;
+
+    line-height:1.5;
+
+}
+
+
+.figma-package-table tbody tr:last-child td{
+
+    border-bottom:none;
+
+}
+
+
+.figma-package-table tbody tr:hover{
+
+    background:#fcfcfb;
+
+}
+
+
+
+/* PACKAGE TITLE */
+
+.figma-package-title{
+
+    width:23%;
+
+    max-width:210px;
+
+    font-size:17px !important;
+
+    font-weight:bold;
+
+    line-height:1.55 !important;
+
+}
+
+
+
+/* PACKAGE PRICE */
+
+.figma-package-price{
+
+    color:#007f75 !important;
+
+    font-weight:bold;
+
+    font-size:17px !important;
+
+}
+
+
+
+/* =========================================================
+   PACKAGE STATUS
+========================================================= */
+
+
+.figma-package-status{
+
+    display:inline-block;
+
+    padding:7px 15px;
+
+    border-radius:20px;
+
+    font-size:13px;
+
+    font-weight:500;
+
+    white-space:nowrap;
+
+}
+
+
+/* AVAILABLE */
+
+.figma-package-status.available{
+
+    background:#d6f8e5;
+
+    color:#007849;
+
+}
+
+
+/* LIMITED */
+
+.figma-package-status.limited{
+
+    background:#fff0c5;
+
+    color:#995b00;
+
+}
+
+
+/* SOLD OUT */
+
+.figma-package-status.sold-out{
+
+    background:#ffe1df;
+
+    color:#bd2424;
+
+}
+
+
+
+/* =========================================================
+   ACTION BUTTONS
+========================================================= */
+
+
+.figma-action-buttons{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+}
+
+
+.figma-action-buttons form{
+
+    margin:0;
+
+    padding:0;
+
+}
+
+
+
+/* EDIT */
+
+.figma-edit-button{
+
+    display:inline-block;
+
+    padding:12px 18px;
+
+    background:#3d7ff1;
+
+    color:white;
+
+    border-radius:8px;
+
+    font-size:15px;
+
+    font-weight:bold;
+
+}
+
+
+.figma-edit-button:hover{
+
+    background:#2868d9;
+
+    color:white;
+
+}
+
+
+
+/* DELETE */
+
+.figma-delete-button{
+
+    border:none;
+
+    padding:12px 18px;
+
+    background:#ef4444;
+
+    color:white;
+
+    border-radius:8px;
+
+    font-size:15px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+}
+
+
+.figma-delete-button:hover{
+
+    background:#d93636;
+
+}
+
+
+
+/* =========================================================
+   MESSAGE BOXES
+========================================================= */
+
+
+.admin-message{
+
+    padding:14px 18px;
+
+    border-radius:9px;
+
+    margin-bottom:20px;
+
+}
+
+
+.admin-message.success{
+
+    background:#dcfce7;
+
+    color:#166534;
+
+}
+
+
+.admin-message.error{
+
+    background:#fee2e2;
+
+    color:#991b1b;
+
+}
+
+
+
+/* =========================================================
+   ADD / EDIT PACKAGE FORM
+========================================================= */
+
+
+.package-form-card{
+
+    background:white;
+
+    border:1px solid #e2dfdc;
+
+    border-radius:18px;
+
+    padding:30px;
+
+    margin:35px 0;
+
+}
+
+
+.package-form-card h2{
+
+    font-family:Georgia, serif;
+
+    font-size:28px;
+
+    font-weight:normal;
+
+    margin-bottom:8px;
+
+}
+
+
+.package-form-card > p{
+
+    color:#777;
+
+    margin-bottom:28px;
+
+}
+
+
+
+/* FORM GRID */
+
+.package-form-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:20px;
+
+}
+
+
+
+/* FORM GROUP */
+
+.admin-form-group{
+
+    margin-bottom:20px;
+
+}
+
+
+.admin-form-group label{
+
+    display:block;
+
+    font-weight:bold;
+
+    margin-bottom:8px;
+
+}
+
+
+.admin-form-group input,
+.admin-form-group textarea,
+.admin-form-group select{
+
+    width:100%;
+
+    padding:13px;
+
+    background:white;
+
+    border:1px solid #d8d4d1;
+
+    border-radius:8px;
+
+    font-size:14px;
+
+    font-family:Arial, Helvetica, sans-serif;
+
+}
+
+
+.admin-form-group textarea{
+
+    resize:vertical;
+
+}
+
+
+.admin-form-group input:focus,
+.admin-form-group textarea:focus,
+.admin-form-group select:focus{
+
+    outline:none;
+
+    border-color:#07877e;
+
+}
+
+
+.admin-form-group small{
+
+    display:block;
+
+    color:#888;
+
+    margin-top:7px;
+
+}
+
+
+
+/* =========================================================
+   FORM BUTTONS
+========================================================= */
+
+
+.form-buttons{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+
+.save-package-button{
+
+    border:none;
+
+    background:#07877e;
+
+    color:white;
+
+    padding:13px 22px;
+
+    border-radius:8px;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+}
+
+
+.save-package-button:hover{
+
+    background:#066f68;
+
+}
+
+
+.cancel-edit-button{
+
+    display:inline-block;
+
+    padding:12px 20px;
+
+    border:1px solid #ccc;
+
+    border-radius:8px;
+
+    color:#555;
+
+}
+
+
+.cancel-edit-button:hover{
+
+    background:#f5f5f5;
+
+}
+
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+
+@media(max-width:1000px){
+
+    .package-form-grid{
+
+        grid-template-columns:
+            repeat(2,1fr);
+
+    }
+
+}
+
+
+@media(max-width:800px){
+
+    .package-toolbar{
+
+        flex-direction:column;
+
+        align-items:stretch;
+
+    }
+
+
+    .package-search-form{
+
+        width:100%;
+
+    }
+
+
+    .package-add-button{
+
+        text-align:center;
+
+    }
+
+
+    .package-form-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+}
 /* =========================================
    ADMIN HOTELS PAGE
 ========================================= */

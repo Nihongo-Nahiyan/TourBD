@@ -832,42 +832,42 @@ href="admin.css"
         </a>
 
 
-        <a href="#">
+        <a href="destination.php">
 
             🗺️ Destinations
 
         </a>
 
 
-        <a href="#">
+        <a href="packages.php">
 
             🎒 Packages
 
         </a>
 
 
-        <a href="#">
+        <a href="hotels.php">
 
             🏨 Hotels
 
         </a>
 
 
-        <a href="#">
+        <a href="transport.php">
 
             🚌 Transport
 
         </a>
 
 
-        <a href="#">
+        <a href="bookings.php">
 
             📋 Bookings
 
         </a>
 
 
-        <a href="#">
+        <a href="reports.php">
 
             📈 Reports
 

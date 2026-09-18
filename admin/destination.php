@@ -203,7 +203,7 @@ if(
 
 
             header(
-                "Location: destinations.php?added=1"
+                "Location: destination.php?added=1"
             );
 
 
@@ -321,7 +321,7 @@ if(
 
 
         header(
-            "Location: destinations.php?updated=1"
+            "Location: destination.php?updated=1"
         );
 
 
@@ -392,7 +392,7 @@ if(
 
 
     header(
-        "Location: destinations.php?status=1"
+        "Location: destination.php?status=1"
     );
 
 
@@ -727,7 +727,7 @@ href="admin.css"
 
 
         <a
-        href="destinations.php"
+        href="destination.php"
         class="active"
         >
 
@@ -736,35 +736,35 @@ href="admin.css"
         </a>
 
 
-        <a href="#">
+        <a href="packages.php">
 
             🎒 Packages
 
         </a>
 
 
-        <a href="#">
+        <a href="hotels.php">
 
             🏨 Hotels
 
         </a>
 
 
-        <a href="#">
+        <a href="transport.php">
 
             🚌 Transport
 
         </a>
 
 
-        <a href="#">
+        <a href="bookings.php">
 
             📋 Bookings
 
         </a>
 
 
-        <a href="#">
+        <a href="reports.php">
 
             📈 Reports
 
@@ -1282,7 +1282,7 @@ href="admin.css"
 
                             <a
 
-                            href="destinations.php?edit=<?php
+                            href="destination.php?edit=<?php
                             echo $destination[
                                 'destination_id'
                             ];
@@ -1300,7 +1300,7 @@ href="admin.css"
 
                             <a
 
-                            href="destinations.php?toggle=<?php
+                            href="destination.php?toggle=<?php
                             echo $destination[
                                 'destination_id'
                             ];
@@ -1757,7 +1757,7 @@ id="destination-form"
 
 
                 <a
-                href="destinations.php"
+                href="destination.php"
                 class="cancel-edit-button"
                 >
 

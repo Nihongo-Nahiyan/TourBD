@@ -1,796 +1,2794 @@
 <?php
 
-require_once "config/db.php";
 
-$pageTitle = "Packages";
-
-
-/* =========================
-   FILTER VALUES
-========================= */
-
-$search = trim($_GET['search'] ?? '');
-
-$destinationId = intval(
-    $_GET['destination_id'] ?? 0
-);
-
-$maxPrice = floatval(
-    $_GET['max_price'] ?? 0
-);
+/* =========================================
+   START SESSION
+========================================= */
 
 
-/* =========================
-   DESTINATIONS
-========================= */
+if(session_status() === PHP_SESSION_NONE){
 
-$destination_sql = "
-    SELECT destination_id, destination_name
-    FROM destinations
-    WHERE active = 1
-    ORDER BY destination_name
-";
+    session_start();
 
-$destinations = mysqli_query(
-    $conn,
-    $destination_sql
-);
+}
 
 
-/* =========================
-   PACKAGES
-========================= */
 
-$sql = "
-    SELECT *
-    FROM available_packages
-    WHERE 1=1
-";
+/* =========================================
+   DATABASE CONNECTION
+========================================= */
 
 
-$params = [];
-$types = "";
+require_once "../config/db.php";
 
 
-/* SEARCH */
 
-if ($search !== "") {
+/* =========================================
+   ADMIN SECURITY
+========================================= */
 
-    $sql .= "
-        AND (
-            package_name LIKE ?
-            OR destination_name LIKE ?
+
+if(!isset($_SESSION['user_id'])){
+
+    header("Location: ../login.php");
+
+    exit;
+
+}
+
+
+if($_SESSION['role'] != 'admin'){
+
+    header("Location: ../index.php");
+
+    exit;
+
+}
+
+
+
+/* =========================================
+   DATE
+========================================= */
+
+
+date_default_timezone_set("Asia/Dhaka");
+
+$current_date = date("l, F j, Y");
+
+
+$message = "";
+
+
+
+/* =========================================
+   ADD PACKAGE
+========================================= */
+
+
+if(
+    $_SERVER['REQUEST_METHOD'] === 'POST'
+    &&
+    isset($_POST['action'])
+    &&
+    $_POST['action'] == 'add'
+){
+
+
+    $destination_id =
+        intval($_POST['destination_id']);
+
+
+    $hotel_id =
+        intval($_POST['hotel_id']);
+
+
+    $transport_id =
+        intval($_POST['transport_id']);
+
+
+    $package_name =
+        trim($_POST['package_name']);
+
+
+    $description =
+        trim($_POST['description']);
+
+
+    $duration_days =
+        intval($_POST['duration_days']);
+
+
+    $duration_nights =
+        intval($_POST['duration_nights']);
+
+
+    $price =
+        floatval($_POST['price']);
+
+
+    $total_seats =
+        intval($_POST['total_seats']);
+
+
+    $available_seats =
+        intval($_POST['available_seats']);
+
+
+    $departure_date =
+        $_POST['departure_date'];
+
+
+    $image_url =
+        trim($_POST['image_url']);
+
+
+    $status =
+        $_POST['status'];
+
+
+
+    /* VALIDATION */
+
+
+    if($package_name == ''){
+
+
+        $message =
+            "Package name is required.";
+
+
+    }
+
+
+    elseif($destination_id <= 0){
+
+
+        $message =
+            "Please select a destination.";
+
+
+    }
+
+
+    elseif($hotel_id <= 0){
+
+
+        $message =
+            "Please select a hotel.";
+
+
+    }
+
+
+    elseif($transport_id <= 0){
+
+
+        $message =
+            "Please select transport.";
+
+
+    }
+
+
+    elseif($duration_days <= 0){
+
+
+        $message =
+            "Duration must be greater than 0.";
+
+
+    }
+
+
+    elseif($price <= 0){
+
+
+        $message =
+            "Price must be greater than 0.";
+
+
+    }
+
+
+    elseif($total_seats <= 0){
+
+
+        $message =
+            "Total seats must be greater than 0.";
+
+
+    }
+
+
+    elseif(
+        $available_seats < 0
+        ||
+        $available_seats > $total_seats
+    ){
+
+
+        $message =
+            "Available seats must be between 0 and total seats.";
+
+
+    }
+
+
+    else{
+
+
+        $insert_sql = "
+
+        INSERT INTO tour_packages
+        (
+            destination_id,
+            hotel_id,
+            transport_id,
+            package_name,
+            description,
+            duration_days,
+            duration_nights,
+            price,
+            total_seats,
+            available_seats,
+            departure_date,
+            image_url,
+            status
         )
+
+        VALUES
+        (
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?
+        )
+
+        ";
+
+
+        $insert_stmt =
+            mysqli_prepare(
+                $conn,
+                $insert_sql
+            );
+
+
+        mysqli_stmt_bind_param(
+            $insert_stmt,
+            "iiissiidiisss",
+            $destination_id,
+            $hotel_id,
+            $transport_id,
+            $package_name,
+            $description,
+            $duration_days,
+            $duration_nights,
+            $price,
+            $total_seats,
+            $available_seats,
+            $departure_date,
+            $image_url,
+            $status
+        );
+
+
+        mysqli_stmt_execute(
+            $insert_stmt
+        );
+
+
+        header(
+            "Location: packages.php?added=1"
+        );
+
+
+        exit;
+
+
+    }
+
+
+}
+
+
+
+/* =========================================
+   UPDATE PACKAGE
+========================================= */
+
+
+if(
+    $_SERVER['REQUEST_METHOD'] === 'POST'
+    &&
+    isset($_POST['action'])
+    &&
+    $_POST['action'] == 'edit'
+){
+
+
+    $package_id =
+        intval($_POST['package_id']);
+
+
+    $destination_id =
+        intval($_POST['destination_id']);
+
+
+    $hotel_id =
+        intval($_POST['hotel_id']);
+
+
+    $transport_id =
+        intval($_POST['transport_id']);
+
+
+    $package_name =
+        trim($_POST['package_name']);
+
+
+    $description =
+        trim($_POST['description']);
+
+
+    $duration_days =
+        intval($_POST['duration_days']);
+
+
+    $duration_nights =
+        intval($_POST['duration_nights']);
+
+
+    $price =
+        floatval($_POST['price']);
+
+
+    $total_seats =
+        intval($_POST['total_seats']);
+
+
+    $available_seats =
+        intval($_POST['available_seats']);
+
+
+    $departure_date =
+        $_POST['departure_date'];
+
+
+    $image_url =
+        trim($_POST['image_url']);
+
+
+    $status =
+        $_POST['status'];
+
+
+
+    if($package_name == ''){
+
+
+        $message =
+            "Package name is required.";
+
+
+    }
+
+
+    elseif(
+        $available_seats < 0
+        ||
+        $available_seats > $total_seats
+    ){
+
+
+        $message =
+            "Available seats cannot be greater than total seats.";
+
+
+    }
+
+
+    else{
+
+
+        $update_sql = "
+
+        UPDATE tour_packages
+
+        SET
+
+            destination_id = ?,
+
+            hotel_id = ?,
+
+            transport_id = ?,
+
+            package_name = ?,
+
+            description = ?,
+
+            duration_days = ?,
+
+            duration_nights = ?,
+
+            price = ?,
+
+            total_seats = ?,
+
+            available_seats = ?,
+
+            departure_date = ?,
+
+            image_url = ?,
+
+            status = ?
+
+        WHERE package_id = ?
+
+        ";
+
+
+        $update_stmt =
+            mysqli_prepare(
+                $conn,
+                $update_sql
+            );
+
+
+        mysqli_stmt_bind_param(
+            $update_stmt,
+            "iiissiidiisssi",
+            $destination_id,
+            $hotel_id,
+            $transport_id,
+            $package_name,
+            $description,
+            $duration_days,
+            $duration_nights,
+            $price,
+            $total_seats,
+            $available_seats,
+            $departure_date,
+            $image_url,
+            $status,
+            $package_id
+        );
+
+
+        mysqli_stmt_execute(
+            $update_stmt
+        );
+
+
+        header(
+            "Location: packages.php?updated=1"
+        );
+
+
+        exit;
+
+
+    }
+
+
+}
+
+
+
+/* =========================================
+   DELETE PACKAGE
+========================================= */
+
+
+if(
+    $_SERVER['REQUEST_METHOD'] === 'POST'
+    &&
+    isset($_POST['action'])
+    &&
+    $_POST['action'] == 'delete'
+){
+
+
+    $package_id =
+        intval($_POST['package_id']);
+
+
+
+    /* CHECK IF PACKAGE HAS BOOKINGS */
+
+
+    $check_sql = "
+
+    SELECT COUNT(*) AS total
+
+    FROM bookings
+
+    WHERE package_id = ?
+
     ";
 
-    $like = "%" . $search . "%";
 
-    $params[] = $like;
-    $params[] = $like;
+    $check_stmt =
+        mysqli_prepare(
+            $conn,
+            $check_sql
+        );
 
-    $types .= "ss";
-}
-
-
-/* DESTINATION */
-
-if ($destinationId > 0) {
-
-    $sql .= "
-        AND destination_id = ?
-    ";
-
-    $params[] = $destinationId;
-
-    $types .= "i";
-}
-
-
-/* MAX PRICE */
-
-if ($maxPrice > 0) {
-
-    $sql .= "
-        AND price <= ?
-    ";
-
-    $params[] = $maxPrice;
-
-    $types .= "d";
-}
-
-
-/* SORT */
-
-$sql .= "
-    ORDER BY departure_date, price
-";
-
-
-/* =========================
-   PREPARE QUERY
-========================= */
-
-$stmt = mysqli_prepare(
-    $conn,
-    $sql
-);
-
-
-if (!$stmt) {
-
-    die(
-        "Query preparation failed: "
-        . mysqli_error($conn)
-    );
-
-}
-
-
-/* ADD PARAMETERS */
-
-if (!empty($params)) {
 
     mysqli_stmt_bind_param(
-        $stmt,
-        $types,
-        ...$params
+        $check_stmt,
+        "i",
+        $package_id
     );
+
+
+    mysqli_stmt_execute(
+        $check_stmt
+    );
+
+
+    $check_result =
+        mysqli_stmt_get_result(
+            $check_stmt
+        );
+
+
+    $check_row =
+        mysqli_fetch_assoc(
+            $check_result
+        );
+
+
+
+    if($check_row['total'] > 0){
+
+
+        header(
+            "Location: packages.php?cannotdelete=1"
+        );
+
+
+        exit;
+
+
+    }
+
+
+    else{
+
+
+        $delete_sql = "
+
+        DELETE FROM tour_packages
+
+        WHERE package_id = ?
+
+        ";
+
+
+        $delete_stmt =
+            mysqli_prepare(
+                $conn,
+                $delete_sql
+            );
+
+
+        mysqli_stmt_bind_param(
+            $delete_stmt,
+            "i",
+            $package_id
+        );
+
+
+        mysqli_stmt_execute(
+            $delete_stmt
+        );
+
+
+        header(
+            "Location: packages.php?deleted=1"
+        );
+
+
+        exit;
+
+
+    }
+
 
 }
 
 
-/* EXECUTE */
 
-mysqli_stmt_execute($stmt);
+/* =========================================
+   GET PACKAGE FOR EDIT
+========================================= */
 
 
-/* GET RESULT */
+$edit_package = NULL;
 
-$packages = mysqli_stmt_get_result($stmt);
+
+if(isset($_GET['edit'])){
+
+
+    $edit_id =
+        intval($_GET['edit']);
+
+
+    $edit_sql = "
+
+    SELECT *
+
+    FROM tour_packages
+
+    WHERE package_id = ?
+
+    ";
+
+
+    $edit_stmt =
+        mysqli_prepare(
+            $conn,
+            $edit_sql
+        );
+
+
+    mysqli_stmt_bind_param(
+        $edit_stmt,
+        "i",
+        $edit_id
+    );
+
+
+    mysqli_stmt_execute(
+        $edit_stmt
+    );
+
+
+    $edit_result =
+        mysqli_stmt_get_result(
+            $edit_stmt
+        );
+
+
+    $edit_package =
+        mysqli_fetch_assoc(
+            $edit_result
+        );
+
+
+}
+
+
+
+/* =========================================
+   GET DESTINATIONS
+========================================= */
+
+
+$destination_sql = "
+
+SELECT *
+
+FROM destinations
+
+WHERE active = 1
+
+ORDER BY destination_name
+
+";
+
+
+$destination_result =
+    mysqli_query(
+        $conn,
+        $destination_sql
+    );
+
+
+
+/* =========================================
+   GET HOTELS
+========================================= */
+
+
+$hotel_sql = "
+
+SELECT *
+
+FROM hotels
+
+ORDER BY hotel_name
+
+";
+
+
+$hotel_result =
+    mysqli_query(
+        $conn,
+        $hotel_sql
+    );
+
+
+
+/* =========================================
+   GET TRANSPORT
+========================================= */
+
+
+$transport_sql = "
+
+SELECT *
+
+FROM transport
+
+ORDER BY provider
+
+";
+
+
+$transport_result =
+    mysqli_query(
+        $conn,
+        $transport_sql
+    );
+
+
+
+/* =========================================
+   SEARCH
+========================================= */
+
+
+$search = "";
+
+
+if(isset($_GET['search'])){
+
+    $search =
+        trim($_GET['search']);
+
+}
+
+
+
+/* =========================================
+   GET PACKAGES
+========================================= */
+
+
+if($search != ''){
+
+
+    $package_sql = "
+
+    SELECT
+
+        tour_packages.*,
+
+        destinations.destination_name
+
+    FROM tour_packages
+
+
+    JOIN destinations
+
+    ON tour_packages.destination_id =
+       destinations.destination_id
+
+
+    WHERE
+
+        tour_packages.package_name
+        LIKE ?
+
+        OR
+
+        destinations.destination_name
+        LIKE ?
+
+
+    ORDER BY tour_packages.package_id DESC
+
+    ";
+
+
+    $package_stmt =
+        mysqli_prepare(
+            $conn,
+            $package_sql
+        );
+
+
+    $search_value =
+        "%" . $search . "%";
+
+
+    mysqli_stmt_bind_param(
+        $package_stmt,
+        "ss",
+        $search_value,
+        $search_value
+    );
+
+
+    mysqli_stmt_execute(
+        $package_stmt
+    );
+
+
+    $package_result =
+        mysqli_stmt_get_result(
+            $package_stmt
+        );
+
+
+}
+
+else{
+
+
+    $package_sql = "
+
+    SELECT
+
+        tour_packages.*,
+
+        destinations.destination_name
+
+    FROM tour_packages
+
+
+    JOIN destinations
+
+    ON tour_packages.destination_id =
+       destinations.destination_id
+
+
+    ORDER BY tour_packages.package_id DESC
+
+    ";
+
+
+    $package_result =
+        mysqli_query(
+            $conn,
+            $package_sql
+        );
+
+
+}
+
 
 ?>
 
+
 <!DOCTYPE html>
+
 
 <html>
 
+
 <head>
 
-    <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
 
-    <title>
-        TourBD - Packages
-    </title>
 
-    <link rel="stylesheet"
-          href="css/style.css">
+<title>
+
+Manage Tour Packages - TourBD
+
+</title>
+
+
+<link
+rel="stylesheet"
+href="admin.css"
+>
+
 
 </head>
+
 
 
 <body>
 
 
-<!-- =========================
-     NAVBAR
-========================= -->
 
-<header>
-
-<nav class="navbar">
+<!-- =========================================
+     TOP NAVBAR
+========================================= -->
 
 
-    <div class="logo">
+<header class="top-navbar">
 
-        ✈ TourBD
+
+    <div class="top-logo">
+
+
+        <div class="logo-icon">
+
+            ✈
+
+        </div>
+
+
+        <span>
+
+            TourBD
+
+        </span>
+
 
     </div>
 
 
-    <div class="nav-links">
 
-        <a href="index.php">
+    <nav class="top-links">
+
+
+        <a href="../index.php">
+
             Home
+
         </a>
 
-        <a href="packages.php">
+
+        <a href="../packages.php">
+
             Packages
-        </a>
-
-        <a href="login.php">
-            Login
-        </a>
-
-        <a href="register.php"
-           class="register-btn">
-
-            Register
 
         </a>
+
+
+        <a href="../my_bookings.php">
+
+            My Bookings
+
+        </a>
+
+
+        <a
+        href="dashboard.php"
+        class="active"
+        >
+
+            Admin
+
+        </a>
+
+
+    </nav>
+
+
+
+    <div class="top-user">
+
+
+        <strong>
+
+            <?php
+            echo e(
+                $_SESSION['name']
+            );
+            ?>
+
+        </strong>
+
+
+        <span class="admin-badge">
+
+            Admin
+
+        </span>
+
+
+        <a
+        href="../logout.php"
+        class="logout-button"
+        >
+
+            Logout
+
+        </a>
+
 
     </div>
 
-
-</nav>
 
 </header>
 
 
 
-<!-- =========================
-     PAGE HEADER
-========================= -->
+<!-- =========================================
+     SIDEBAR
+========================================= -->
 
-<section class="packages-page-header">
 
-    <h1>
-        Browse Tour Packages
-    </h1>
+<aside class="admin-sidebar">
 
-    <p>
-        Find the perfect Bangladesh adventure for you
-    </p>
 
-</section>
+    <div class="sidebar-title">
 
 
+        <h2>
 
-<!-- =========================
-     PACKAGES AREA
-========================= -->
+            Admin Panel
 
-<section class="all-packages">
+        </h2>
 
-    <div class="packages-layout">
 
-
-        <!-- =========================
-             FILTER SIDEBAR
-        ========================= -->
-
-        <aside class="filter-box">
-
-
-            <h2>
-                🔍 Search & Filter
-            </h2>
-
-
-            <form method="get">
-
-
-                <!-- SEARCH -->
-
-                <div class="filter-group">
-
-                    <label>
-                        Search
-                    </label>
-
-                    <input
-                        type="text"
-                        name="search"
-                        value="<?php echo e($search); ?>"
-                        placeholder="Destination or package..."
-                    >
-
-                </div>
-
-
-
-                <!-- DESTINATION -->
-
-                <div class="filter-group">
-
-                    <label>
-                        Destination
-                    </label>
-
-                    <select name="destination_id">
-
-                        <option value="0">
-                            All Destinations
-                        </option>
-
-
-                        <?php
-
-                        while (
-                            $d =
-                            mysqli_fetch_assoc(
-                                $destinations
-                            )
-                        ):
-
-                        ?>
-
-                            <option
-                                value="<?php
-                                    echo e(
-                                        $d['destination_id']
-                                    );
-                                ?>"
-                                <?php
-
-                                if (
-                                    $destinationId
-                                    ==
-                                    $d['destination_id']
-                                ) {
-
-                                    echo "selected";
-
-                                }
-
-                                ?>
-                            >
-
-                                <?php
-
-                                echo e(
-                                    $d['destination_name']
-                                );
-
-                                ?>
-
-                            </option>
-
-                        <?php endwhile; ?>
-
-                    </select>
-
-                </div>
-
-
-
-                <!-- CATEGORY -->
-
-                <div class="filter-group">
-
-                    <label>
-                        Category
-                    </label>
-
-                    <div class="category-buttons">
-
-                        <button
-                            type="button"
-                            class="category-active"
-                        >
-                            All
-                        </button>
-
-                        <button
-                            type="button"
-                        >
-                            Beach
-                        </button>
-
-                        <button
-                            type="button"
-                        >
-                            Hill
-                        </button>
-
-                        <button
-                            type="button"
-                        >
-                            Nature
-                        </button>
-
-                        <button
-                            type="button"
-                        >
-                            Adventure
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-
-                <!-- MAX PRICE -->
-
-                <div class="filter-group">
-
-                    <label>
-                        Max Price:
-                        <strong>
-                            ৳20,000
-                        </strong>
-                    </label>
-
-                    <input
-                        type="range"
-                        name="max_price"
-                        min="5000"
-                        max="20000"
-                        value="<?php
-                            echo $maxPrice > 0
-                                ? e($maxPrice)
-                                : 20000;
-                        ?>"
-                    >
-
-                    <div class="price-range">
-
-                        <span>
-                            ৳5,000
-                        </span>
-
-                        <span>
-                            ৳20,000
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-
-                <!-- SORT -->
-
-                <div class="filter-group">
-
-                    <label>
-                        Sort By
-                    </label>
-
-                    <select>
-
-                        <option>
-                            Default
-                        </option>
-
-                        <option>
-                            Price: Low to High
-                        </option>
-
-                        <option>
-                            Price: High to Low
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-
-                <!-- FILTER BUTTON -->
-
-                <button
-                    type="submit"
-                    class="filter-submit"
-                >
-
-                    Apply Filters
-
-                </button>
-
-
-            </form>
-
-
-        </aside>
-
-
-
-        <!-- =========================
-             PACKAGE RESULTS
-        ========================= -->
-
-        <div class="package-results">
-
-
-            <div class="results-header">
-
-                <span>
-
-                    Showing
-                    <strong>
-                        <?php
-                        echo mysqli_num_rows(
-                            $packages
-                        );
-                        ?>
-                    </strong>
-                    packages
-
-                </span>
-
-            </div>
-
-
+        <p>
 
             <?php
-
-            if (
-                mysqli_num_rows($packages)
-                == 0
-            ):
-
+            echo e(
+                $_SESSION['name']
+            );
             ?>
 
-                <div class="empty-state">
-
-                    No available packages
-                    match your search.
-
-                </div>
-
-
-            <?php else: ?>
-
-
-                <div class="package-grid">
-
-
-                    <?php
-
-                    while (
-                        $p =
-                        mysqli_fetch_assoc(
-                            $packages
-                        )
-                    ):
-
-                    ?>
-
-
-                        <!-- PACKAGE CARD -->
-
-                        <div class="package-card">
-
-
-                            <!-- IMAGE -->
-
-                            <img
-                                class="package-img"
-                                src="assets/images/<?php
-                                    echo e(
-                                        $p['image_url']
-                                    );
-                                ?>"
-                                alt="<?php
-                                    echo e(
-                                        $p['package_name']
-                                    );
-                                ?>"
-                            >
-
-
-
-                            <div class="package-content">
-
-
-                                <!-- STATUS -->
-
-                                <?php
-
-                                if (
-                                    $p['available_seats']
-                                    <= 3
-                                ):
-
-                                ?>
-
-                                    <span class="available warning">
-
-                                        ⚡ Limited
-
-                                    </span>
-
-                                <?php else: ?>
-
-                                    <span class="available">
-
-                                        ✓ Available
-
-                                    </span>
-
-                                <?php endif; ?>
-
-
-
-                                <!-- DESTINATION -->
-
-                                <p class="package-location">
-
-                                    📍
-                                    <?php
-
-                                    echo e(
-                                        $p['destination_name']
-                                    );
-
-                                    ?>
-
-                                </p>
-
-
-
-                                <!-- PACKAGE NAME -->
-
-                                <h3>
-
-                                    <?php
-
-                                    echo e(
-                                        $p['package_name']
-                                    );
-
-                                    ?>
-
-                                </h3>
-
-
-
-                                <!-- DETAILS -->
-
-                                <div class="package-meta">
-
-                                    <span>
-
-                                        ⏱
-                                        <?php
-
-                                        echo e(
-                                            $p['duration_days']
-                                        );
-
-                                        ?>
-
-                                        Days /
-
-                                        <?php
-
-                                        echo e(
-                                            $p['duration_nights']
-                                        );
-
-                                        ?>
-
-                                        Nights
-
-                                    </span>
-
-
-                                    <span>
-
-                                        🪑
-                                        <?php
-
-                                        echo e(
-                                            $p['available_seats']
-                                        );
-
-                                        ?>
-
-                                        seats left
-
-                                    </span>
-
-
-                                    <span>
-
-                                        📅
-                                        <?php
-
-                                        echo e(
-                                            $p['departure_date']
-                                        );
-
-                                        ?>
-
-                                    </span>
-
-                                </div>
-
-
-
-                                <!-- DESCRIPTION -->
-
-                                <p class="package-description">
-
-                                    <?php
-
-                                    echo e(
-                                        $p['description']
-                                    );
-
-                                    ?>
-
-                                </p>
-
-
-
-                                <!-- PRICE + BUTTON -->
-
-                                <div class="package-bottom">
-
-
-                                    <strong class="package-price">
-
-                                        <?php
-
-                                        echo money(
-                                            $p['price']
-                                        );
-
-                                        ?>
-
-                                        <small>
-                                            /person
-                                        </small>
-
-                                    </strong>
-
-
-                                    <a
-                                        href="package_details.php?id=<?php
-                                            echo e(
-                                                $p['package_id']
-                                            );
-                                        ?>"
-                                        class="details-btn"
-                                    >
-
-                                        View Details
-
-                                    </a>
-
-
-                                </div>
-
-
-                            </div>
-
-
-                        </div>
-
-
-                    <?php endwhile; ?>
-
-
-                </div>
-
-
-            <?php endif; ?>
-
-
-        </div>
+        </p>
 
 
     </div>
 
+
+
+    <div class="sidebar-menu">
+
+
+        <a href="dashboard.php">
+
+            📊 Overview
+
+        </a>
+
+
+        <a href="destination.php">
+
+            🗺️ Destinations
+
+        </a>
+
+
+        <a
+        href="packages.php"
+        class="active"
+        >
+
+            🎒 Packages
+
+        </a>
+
+
+        <a href="hotels.php">
+
+            🏨 Hotels
+
+        </a>
+
+
+        <a href="transport.php">
+
+            🚌 Transport
+
+        </a>
+
+
+        <a href="bookings.php">
+
+            📋 Bookings
+
+        </a>
+
+
+        <a href="reports.php">
+
+            📈 Reports
+
+        </a>
+
+
+    </div>
+
+
+</aside>
+
+
+
+<!-- =========================================
+     MAIN
+========================================= -->
+
+
+<main class="admin-main">
+
+
+
+<!-- PAGE TITLE -->
+
+
+<section class="dashboard-title">
+
+
+    <h1>
+
+        Manage Tour Packages
+
+    </h1>
+
+
+    <p>
+
+        TourBD Admin ·
+        <?php echo $current_date; ?>
+
+    </p>
+
+
 </section>
 
 
 
-<!-- =========================
-     FOOTER
-========================= -->
+<!-- =========================================
+     SEARCH + ADD
+========================================= -->
 
-<footer>
 
-    <h3>
-        ✈ TourBD
-    </h3>
+<section class="package-toolbar">
 
-    <p>
-        © 2026 TourBD -
-        Tour Package & Travel Booking
-        Management System
-    </p>
 
-</footer>
+    <form
+    method="GET"
+    class="package-search-form"
+    >
+
+
+        <input
+
+        type="text"
+
+        name="search"
+
+        value="<?php
+        echo e($search);
+        ?>"
+
+        placeholder="Search packages..."
+
+        >
+
+
+    </form>
+
+
+
+    <a
+    href="packages.php?add=1#package-form"
+    class="package-add-button"
+    >
+
+        + Add Package
+
+    </a>
+
+
+</section>
+
+
+
+<!-- =========================================
+     MESSAGES
+========================================= -->
+
+
+<?php if(isset($_GET['added'])){ ?>
+
+
+<div class="admin-message success">
+
+    Package added successfully.
+
+</div>
+
+
+<?php } ?>
+
+
+
+<?php if(isset($_GET['updated'])){ ?>
+
+
+<div class="admin-message success">
+
+    Package updated successfully.
+
+</div>
+
+
+<?php } ?>
+
+
+
+<?php if(isset($_GET['deleted'])){ ?>
+
+
+<div class="admin-message success">
+
+    Package deleted successfully.
+
+</div>
+
+
+<?php } ?>
+
+
+
+<?php if(isset($_GET['cannotdelete'])){ ?>
+
+
+<div class="admin-message error">
+
+    This package has existing bookings
+    and cannot be deleted.
+
+</div>
+
+
+<?php } ?>
+
+
+
+<?php if($message != ''){ ?>
+
+
+<div class="admin-message error">
+
+    <?php
+    echo e($message);
+    ?>
+
+</div>
+
+
+<?php } ?>
+
+
+
+<!-- =========================================
+     PACKAGE TABLE
+========================================= -->
+
+
+<section class="figma-package-table">
+
+
+<table>
+
+
+<thead>
+
+
+<tr>
+
+
+    <th>
+
+        Title
+
+    </th>
+
+
+    <th>
+
+        Destination
+
+    </th>
+
+
+    <th>
+
+        Duration
+
+    </th>
+
+
+    <th>
+
+        Price/Person
+
+    </th>
+
+
+    <th>
+
+        Seats
+
+    </th>
+
+
+    <th>
+
+        Status
+
+    </th>
+
+
+    <th>
+
+        Actions
+
+    </th>
+
+
+</tr>
+
+
+</thead>
+
+
+
+<tbody>
+
+
+<?php
+
+
+if(
+    mysqli_num_rows(
+        $package_result
+    ) > 0
+){
+
+
+    while(
+        $package =
+        mysqli_fetch_assoc(
+            $package_result
+        )
+    ){
+
+
+        $package_status =
+            strtolower(
+                $package['status']
+            );
+
+
+?>
+
+
+<tr>
+
+
+
+<!-- PACKAGE TITLE -->
+
+
+<td class="figma-package-title">
+
+
+    <?php
+    echo e(
+        $package[
+            'package_name'
+        ]
+    );
+    ?>
+
+
+</td>
+
+
+
+<!-- DESTINATION -->
+
+
+<td>
+
+
+    📍
+
+    <?php
+    echo e(
+        $package[
+            'destination_name'
+        ]
+    );
+    ?>
+
+
+</td>
+
+
+
+<!-- DURATION -->
+
+
+<td>
+
+
+    <?php
+    echo $package[
+        'duration_days'
+    ];
+    ?>
+
+    Days /
+
+    <br>
+
+    <?php
+    echo $package[
+        'duration_nights'
+    ];
+    ?>
+
+    Nights
+
+
+</td>
+
+
+
+<!-- PRICE -->
+
+
+<td class="figma-package-price">
+
+
+    ৳<?php
+
+    echo number_format(
+        $package[
+            'price'
+        ],
+        0
+    );
+
+    ?>
+
+
+</td>
+
+
+
+<!-- SEATS -->
+
+
+<td>
+
+
+    <?php
+    echo $package[
+        'available_seats'
+    ];
+    ?>
+
+    /
+
+    <?php
+    echo $package[
+        'total_seats'
+    ];
+    ?>
+
+
+</td>
+
+
+
+<!-- STATUS -->
+
+
+<td>
+
+
+<?php
+
+
+if(
+    $package[
+        'available_seats'
+    ] <= 0
+
+    ||
+
+    $package_status ==
+    'sold_out'
+
+    ||
+
+    $package_status ==
+    'sold out'
+){
+
+
+?>
+
+
+    <span class="
+    figma-package-status
+    sold-out
+    ">
+
+        Sold Out
+
+    </span>
+
+
+<?php
+
+
+}
+
+elseif(
+    $package_status ==
+    'limited'
+){
+
+
+?>
+
+
+    <span class="
+    figma-package-status
+    limited
+    ">
+
+        Limited
+
+    </span>
+
+
+<?php
+
+
+}
+
+else{
+
+
+?>
+
+
+    <span class="
+    figma-package-status
+    available
+    ">
+
+        Available
+
+    </span>
+
+
+<?php
+
+
+}
+
+
+?>
+
+
+</td>
+
+
+
+<!-- ACTIONS -->
+
+
+<td>
+
+
+<div class="figma-action-buttons">
+
+
+
+    <a
+
+    href="packages.php?edit=<?php
+    echo $package[
+        'package_id'
+    ];
+    ?>#package-form"
+
+    class="figma-edit-button"
+
+    >
+
+        Edit
+
+    </a>
+
+
+
+    <form
+
+    method="POST"
+
+    onsubmit="
+    return confirm(
+    'Are you sure you want to delete this package?'
+    );
+    "
+
+    >
+
+
+        <input
+        type="hidden"
+        name="action"
+        value="delete"
+        >
+
+
+        <input
+        type="hidden"
+        name="package_id"
+        value="<?php
+        echo $package[
+            'package_id'
+        ];
+        ?>"
+        >
+
+
+        <button
+        type="submit"
+        class="figma-delete-button"
+        >
+
+            Delete
+
+        </button>
+
+
+    </form>
+
+
+</div>
+
+
+</td>
+
+
+</tr>
+
+
+<?php
+
+
+    }
+
+
+}
+
+else{
+
+
+?>
+
+
+<tr>
+
+
+<td
+colspan="7"
+class="no-data"
+>
+
+    No packages found.
+
+</td>
+
+
+</tr>
+
+
+<?php
+
+
+}
+
+
+?>
+
+
+</tbody>
+
+
+</table>
+
+
+</section>
+
+
+
+<!-- =========================================
+     ADD / EDIT PACKAGE FORM
+========================================= -->
+
+
+<?php
+
+
+if(
+    isset($_GET['add'])
+    ||
+    $edit_package
+    ||
+    $message != ''
+){
+
+
+?>
+
+
+<section
+class="package-form-card"
+id="package-form"
+>
+
+
+
+<?php
+
+
+if($edit_package){
+
+
+?>
+
+
+<h2>
+
+    Edit Package
+
+</h2>
+
+
+<p>
+
+    Update package information.
+
+</p>
+
+
+<?php
+
+
+}
+
+else{
+
+
+?>
+
+
+<h2>
+
+    Add New Package
+
+</h2>
+
+
+<p>
+
+    Enter the new package information.
+
+</p>
+
+
+<?php
+
+
+}
+
+
+?>
+
+
+
+<form method="POST">
+
+
+
+<?php
+
+
+if($edit_package){
+
+
+?>
+
+
+<input
+type="hidden"
+name="action"
+value="edit"
+>
+
+
+<input
+type="hidden"
+name="package_id"
+value="<?php
+echo $edit_package[
+    'package_id'
+];
+?>"
+>
+
+
+<?php
+
+
+}
+
+else{
+
+
+?>
+
+
+<input
+type="hidden"
+name="action"
+value="add"
+>
+
+
+<?php
+
+
+}
+
+
+?>
+
+
+
+<!-- PACKAGE NAME -->
+
+
+<div class="admin-form-group">
+
+
+<label>
+
+    Package Name
+
+</label>
+
+
+<input
+
+type="text"
+
+name="package_name"
+
+value="<?php
+
+if($edit_package){
+
+    echo e(
+        $edit_package[
+            'package_name'
+        ]
+    );
+
+}
+
+?>"
+
+required
+
+>
+
+
+</div>
+
+
+
+<!-- DESCRIPTION -->
+
+
+<div class="admin-form-group">
+
+
+<label>
+
+    Description
+
+</label>
+
+
+<textarea
+
+name="description"
+
+rows="4"
+
+><?php
+
+if($edit_package){
+
+    echo e(
+        $edit_package[
+            'description'
+        ]
+    );
+
+}
+
+?></textarea>
+
+
+</div>
+
+
+
+<!-- DESTINATION HOTEL TRANSPORT -->
+
+
+<div class="package-form-grid">
+
+
+
+<!-- DESTINATION -->
+
+
+<div class="admin-form-group">
+
+
+<label>
+
+    Destination
+
+</label>
+
+
+<select
+name="destination_id"
+required
+>
+
+
+<option value="">
+
+    Select Destination
+
+</option>
+
+
+<?php
+
+
+mysqli_data_seek(
+    $destination_result,
+    0
+);
+
+
+while(
+    $destination =
+    mysqli_fetch_assoc(
+        $destination_result
+    )
+){
+
+
+?>
+
+
+<option
+
+value="<?php
+echo $destination[
+    'destination_id'
+];
+?>"
+
+<?php
+
+
+if(
+    $edit_package
+    &&
+    $edit_package[
+        'destination_id'
+    ]
+    ==
+    $destination[
+        'destination_id'
+    ]
+){
+
+    echo "selected";
+
+}
+
+
+?>
+
+>
+
+
+<?php
+echo e(
+    $destination[
+        'destination_name'
+    ]
+);
+?>
+
+
+</option>
+
+
+<?php
+
+
+}
+
+
+?>
+
+
+</select>
+
+
+</div>
+
+
+
+<!-- HOTEL -->
+
+
+<div class="admin-form-group">
+
+
+<label>
+
+    Hotel
+
+</label>
+
+
+<select
+name="hotel_id"
+required
+>
+
+
+<option value="">
+
+    Select Hotel
+
+</option>
+
+
+<?php
+
+
+mysqli_data_seek(
+    $hotel_result,
+    0
+);
+
+
+while(
+    $hotel =
+    mysqli_fetch_assoc(
+        $hotel_result
+    )
+){
+
+
+?>
+
+
+<option
+
+value="<?php
+echo $hotel[
+    'hotel_id'
+];
+?>"
+
+<?php
+
+
+if(
+    $edit_package
+    &&
+    $edit_package[
+        'hotel_id'
+    ]
+    ==
+    $hotel[
+        'hotel_id'
+    ]
+){
+
+    echo "selected";
+
+}
+
+
+?>
+
+>
+
+
+<?php
+echo e(
+    $hotel[
+        'hotel_name'
+    ]
+);
+?>
+
+
+</option>
+
+
+<?php
+
+
+}
+
+
+?>
+
+
+</select>
+
+
+</div>
+
+
+
+<!-- TRANSPORT -->
+
+
+<div class="admin-form-group">
+
+
+<label>
+
+    Transport
+
+</label>
+
+
+<select
+name="transport_id"
+required
+>
+
+
+<option value="">
+
+    Select Transport
+
+</option>
+
+
+<?php
+
+
+mysqli_data_seek(
+    $transport_result,
+    0
+);
+
+
+while(
+    $transport =
+    mysqli_fetch_assoc(
+        $transport_result
+    )
+){
+
+
+?>
+
+
+<option
+
+value="<?php
+echo $transport[
+    'transport_id'
+];
+?>"
+
+<?php
+
+
+if(
+    $edit_package
+    &&
+    $edit_package[
+        'transport_id'
+    ]
+    ==
+    $transport[
+        'transport_id'
+    ]
+){
+
+    echo "selected";
+
+}
+
+
+?>
+
+>
+
+
+<?php
+echo e(
+    $transport[
+        'provider'
+    ]
+);
+?>
+
+-
+
+<?php
+echo e(
+    $transport[
+        'type'
+    ]
+);
+?>
+
+
+</option>
+
+
+<?php
+
+
+}
+
+
+?>
+
+
+</select>
+
+
+</div>
+
+
+</div>
+
+
+
+<!-- DURATION + PRICE -->
+
+
+<div class="package-form-grid">
+
+
+
+<div class="admin-form-group">
+
+
+<label>
+
+    Duration Days
+
+</label>
+
+
+<input
+
+type="number"
+
+name="duration_days"
+
+min="1"
+
+value="<?php
+
+if($edit_package){
+
+    echo $edit_package[
+        'duration_days'
+    ];
+
+}
+
+?>"
+
+required
+
+>
+
+
+</div>
+
+
+
+<div class="admin-form-group">
+
+
+<label>
+
+    Duration Nights
+
+</label>
+
+
+<input
+
+type="number"
+
+name="duration_nights"
+
+min="0"
+
+value="<?php
+
+if($edit_package){
+
+    echo $edit_package[
+        'duration_nights'
+    ];
+
+}
+
+?>"
+
+required
+
+>
+
+
+</div>
+
+
+
+<div class="admin-form-group">
+
+
+<label>
+
+    Price / Person
+
+</label>
+
+
+<input
+
+type="number"
+
+name="price"
+
+min="1"
+
+step="0.01"
+
+value="<?php
+
+if($edit_package){
+
+    echo $edit_package[
+        'price'
+    ];
+
+}
+
+?>"
+
+required
+
+>
+
+
+</div>
+
+
+</div>
+
+
+
+<!-- SEATS + DATE -->
+
+
+<div class="package-form-grid">
+
+
+
+<div class="admin-form-group">
+
+
+<label>
+
+    Total Seats
+
+</label>
+
+
+<input
+
+type="number"
+
+name="total_seats"
+
+min="1"
+
+value="<?php
+
+if($edit_package){
+
+    echo $edit_package[
+        'total_seats'
+    ];
+
+}
+
+?>"
+
+required
+
+>
+
+
+</div>
+
+
+
+<div class="admin-form-group">
+
+
+<label>
+
+    Available Seats
+
+</label>
+
+
+<input
+
+type="number"
+
+name="available_seats"
+
+min="0"
+
+value="<?php
+
+if($edit_package){
+
+    echo $edit_package[
+        'available_seats'
+    ];
+
+}
+
+?>"
+
+required
+
+>
+
+
+</div>
+
+
+
+<div class="admin-form-group">
+
+
+<label>
+
+    Departure Date
+
+</label>
+
+
+<input
+
+type="date"
+
+name="departure_date"
+
+value="<?php
+
+if($edit_package){
+
+    echo $edit_package[
+        'departure_date'
+    ];
+
+}
+
+?>"
+
+required
+
+>
+
+
+</div>
+
+
+</div>
+
+
+
+<!-- IMAGE + STATUS -->
+
+
+<div class="package-form-grid">
+
+
+
+<div class="admin-form-group">
+
+
+<label>
+
+    Image Filename
+
+</label>
+
+
+<input
+
+type="text"
+
+name="image_url"
+
+placeholder="Example: cox.jpg"
+
+value="<?php
+
+if($edit_package){
+
+    echo e(
+        $edit_package[
+            'image_url'
+        ]
+    );
+
+}
+
+?>"
+
+>
+
+
+<small>
+
+    Image must exist inside
+    assets/images/.
+
+</small>
+
+
+</div>
+
+
+
+<div class="admin-form-group">
+
+
+<label>
+
+    Status
+
+</label>
+
+
+<select
+name="status"
+required
+>
+
+
+
+<option
+value="Available"
+
+<?php
+
+
+if(
+    $edit_package
+    &&
+    strtolower(
+        $edit_package[
+            'status'
+        ]
+    )
+    == 'available'
+){
+
+    echo "selected";
+
+}
+
+
+?>
+
+>
+
+Available
+
+</option>
+
+
+
+<option
+value="Limited"
+
+<?php
+
+
+if(
+    $edit_package
+    &&
+    strtolower(
+        $edit_package[
+            'status'
+        ]
+    )
+    == 'limited'
+){
+
+    echo "selected";
+
+}
+
+
+?>
+
+>
+
+Limited
+
+</option>
+
+
+
+<option
+value="Sold Out"
+
+<?php
+
+
+if(
+    $edit_package
+    &&
+    (
+        strtolower(
+            $edit_package[
+                'status'
+            ]
+        )
+        == 'sold out'
+
+        ||
+
+        strtolower(
+            $edit_package[
+                'status'
+            ]
+        )
+        == 'sold_out'
+    )
+){
+
+    echo "selected";
+
+}
+
+
+?>
+
+>
+
+Sold Out
+
+</option>
+
+
+</select>
+
+
+</div>
+
+
+</div>
+
+
+
+<!-- BUTTONS -->
+
+
+<div class="form-buttons">
+
+
+<button
+type="submit"
+class="save-package-button"
+>
+
+
+<?php
+
+
+if($edit_package){
+
+    echo "Update Package";
+
+}
+
+else{
+
+    echo "Add Package";
+
+}
+
+
+?>
+
+
+</button>
+
+
+
+<a
+href="packages.php"
+class="cancel-edit-button"
+>
+
+    Cancel
+
+</a>
+
+
+</div>
+
+
+</form>
+
+
+</section>
+
+
+<?php
+
+
+}
+
+
+?>
+
+
+
+</main>
 
 
 </body>
+
 
 </html>
