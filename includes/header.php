@@ -1,7 +1,20 @@
 <?php
 
-if (!isset($pageTitle)) {
-    $pageTitle = 'TourBD';
+/* START SESSION */
+
+if(session_status() === PHP_SESSION_NONE){
+
+    session_start();
+
+}
+
+
+/* PAGE TITLE */
+
+if(!isset($pageTitle)){
+
+    $pageTitle = "TourBD";
+
 }
 
 ?>
@@ -20,7 +33,7 @@ if (!isset($pageTitle)) {
     >
 
     <title>
-        <?= htmlspecialchars($pageTitle) ?> - TourBD
+        <?php echo htmlspecialchars($pageTitle); ?> - TourBD
     </title>
 
     <link
@@ -36,54 +49,158 @@ if (!isset($pageTitle)) {
 
 <header class="site-header">
 
-    <div class="container">
+<div class="container">
 
-        <nav class="navbar">
+<nav class="navbar">
 
 
-            <a
-                href="index.php"
-                class="brand"
-            >
+    <!-- LOGO -->
 
-                ✈ TourBD
+    <a
+        href="index.php"
+        class="brand"
+    >
+
+        ✈ TourBD
+
+    </a>
+
+
+
+    <!-- NAVIGATION -->
+
+    <div class="nav-links">
+
+
+        <a href="index.php">
+
+            Home
+
+        </a>
+
+
+        <a href="packages.php">
+
+            Packages
+
+        </a>
+
+
+
+        <!-- LOGGED IN USER -->
+
+        <?php if(isset($_SESSION['user_id'])){ ?>
+
+
+
+            <!-- CUSTOMER -->
+
+            <?php if($_SESSION['role'] == 'user'){ ?>
+
+
+                <a href="my_bookings.php">
+
+                    My Bookings
+
+                </a>
+
+
+            <?php } ?>
+
+
+
+            <!-- ADMIN -->
+
+            <?php if($_SESSION['role'] == 'admin'){ ?>
+
+
+                <a href="admin/dashboard.php">
+
+                    Admin
+
+                </a>
+
+
+            <?php } ?>
+
+
+
+        <?php } else { ?>
+
+
+
+            <!-- NOT LOGGED IN -->
+
+            <a href="login.php">
+
+                Login
 
             </a>
 
 
-            <div class="nav-links">
 
-                <a href="index.php">
-                    Home
-                </a>
+        <?php } ?>
 
-                <a href="packages.php">
-                    Packages
-                </a>
-
-                <a href="login.php">
-                    Login
-                </a>
-
-            </div>
-
-
-            <div class="nav-actions">
-
-                <a
-                    href="register.php"
-                    class="btn-primary"
-                >
-
-                    Register
-
-                </a>
-
-            </div>
-
-
-        </nav>
 
     </div>
+
+
+
+    <!-- RIGHT SIDE -->
+
+    <div class="nav-actions">
+
+
+
+        <?php if(isset($_SESSION['user_id'])){ ?>
+
+
+            <span class="user-name">
+
+                <?php
+
+                echo htmlspecialchars(
+                    $_SESSION['name']
+                );
+
+                ?>
+
+            </span>
+
+
+
+            <a
+                href="logout.php"
+                class="btn-primary"
+            >
+
+                Logout
+
+            </a>
+
+
+
+        <?php } else { ?>
+
+
+            <a
+                href="register.php"
+                class="btn-primary"
+            >
+
+                Register
+
+            </a>
+
+
+        <?php } ?>
+
+
+    </div>
+
+
+</nav>
+
+</div>
 
 </header>
