@@ -1,6 +1,5 @@
 <?php
 
-
 include "config/db.php";
 // STATS FROM DATABASE
 
@@ -52,57 +51,10 @@ LIMIT 4
 
 $package_result = mysqli_query($conn,$package_sql);
 
+$pageTitle = "Home";
+
+require_once "includes/header.php";
 ?>
-
-<!DOCTYPE html>
-
-<html>
-
-<head>
-
-<title>TourBD</title>
-
-<link rel="stylesheet" href="css/style.css">
-
-</head>
-
-<body>
-
-<!-- NAVBAR -->
-
-<header>
-
-<nav class="navbar">
-
-<div class="logo">
-
-✈ TourBD
-
-</div>
-
-<div class="nav-links">
-
-<a href="index.php">
-Home
-</a>
-
-<a href="packages.php">
-Packages
-</a>
-
-<a href="login.php">
-Login
-</a>
-
-<a href="register.php" class="register-btn">
-Register
-</a>
-
-</div>
-
-</nav>
-
-</header>
 
 <!-- HERO -->
 

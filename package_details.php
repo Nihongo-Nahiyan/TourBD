@@ -6,13 +6,9 @@ $pageTitle = "Package Details";
 
 require_once "includes/header.php";
 
-
-
 /* GET PACKAGE ID */
 
-
 $id = 0;
-
 
 if(isset($_GET['id'])){
 
@@ -20,10 +16,7 @@ if(isset($_GET['id'])){
 
 }
 
-
-
 /* GET PACKAGE INFORMATION */
-
 
 $sql = "
 
@@ -35,9 +28,7 @@ WHERE package_id = ?
 
 ";
 
-
 $stmt = mysqli_prepare($conn,$sql);
-
 
 mysqli_stmt_bind_param(
     $stmt,
@@ -45,19 +36,13 @@ mysqli_stmt_bind_param(
     $id
 );
 
-
 mysqli_stmt_execute($stmt);
-
 
 $result = mysqli_stmt_get_result($stmt);
 
-
 $package = mysqli_fetch_assoc($result);
 
-
-
 /* PACKAGE NOT FOUND */
-
 
 if(!$package){
 
@@ -83,25 +68,15 @@ exit;
 
 ?>
 
-
-
-
-
 <!-- PACKAGE DETAILS -->
-
 
 <section class="package-details-section">
 
-
 <div class="details-container">
-
-
 
 <!-- PACKAGE IMAGE -->
 
-
 <div class="details-image-box">
-
 
 <img
 
@@ -113,19 +88,11 @@ class="details-image"
 
 >
 
-
 </div>
-
-
-
-
 
 <!-- PACKAGE INFORMATION -->
 
-
 <div class="details-content">
-
-
 
 <span class="available">
 
@@ -135,15 +102,11 @@ seats available
 
 </span>
 
-
-
 <h1>
 
 <?php echo $package['package_name']; ?>
 
 </h1>
-
-
 
 <p class="details-description">
 
@@ -151,12 +114,7 @@ seats available
 
 </p>
 
-
-
-
-
 <div class="details-info">
-
 
 <p>
 
@@ -168,8 +126,6 @@ Destination:
 
 </p>
 
-
-
 <p>
 
 <strong>
@@ -179,8 +135,6 @@ Hotel:
 <?php echo $package['hotel_name']; ?>
 
 </p>
-
-
 
 <p>
 
@@ -195,8 +149,6 @@ Transport:
 <?php echo $package['transport_provider']; ?>
 
 </p>
-
-
 
 <p>
 
@@ -214,8 +166,6 @@ Nights
 
 </p>
 
-
-
 <p>
 
 <strong>
@@ -226,12 +176,7 @@ Departure:
 
 </p>
 
-
 </div>
-
-
-
-
 
 <h2 class="details-price">
 
@@ -243,15 +188,9 @@ Departure:
 
 </h2>
 
-
-
-
-
 <!-- BOOKING BUTTON -->
 
-
 <?php
-
 
 if(isset($_SESSION['user_id'])){
 
@@ -259,7 +198,6 @@ if(isset($_SESSION['user_id'])){
     if($_SESSION['role'] != 'admin'){
 
 ?>
-
 
 <a
 
@@ -273,7 +211,6 @@ Book Package
 
 </a>
 
-
 <?php
 
     }
@@ -283,7 +220,6 @@ Book Package
 else{
 
 ?>
-
 
 <a
 
@@ -297,23 +233,16 @@ Login to Book
 
 </a>
 
-
 <?php
 
 }
 
 ?>
 
-
 </div>
 
-
 </div>
-
-
 </section>
-
-
 
 <?php
 

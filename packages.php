@@ -149,75 +149,13 @@ mysqli_stmt_execute($stmt);
 
 $packages = mysqli_stmt_get_result($stmt);
 
+
+
+$pageTitle = "Packages";
+
+require_once "includes/header.php";
+
 ?>
-
-<!DOCTYPE html>
-
-<html>
-
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>
-        TourBD - Packages
-    </title>
-
-    <link rel="stylesheet"
-          href="css/style.css">
-
-</head>
-
-
-<body>
-
-
-<!-- =========================
-     NAVBAR
-========================= -->
-
-<header>
-
-<nav class="navbar">
-
-
-    <div class="logo">
-
-        ✈ TourBD
-
-    </div>
-
-
-    <div class="nav-links">
-
-        <a href="index.php">
-            Home
-        </a>
-
-        <a href="packages.php">
-            Packages
-        </a>
-
-        <a href="login.php">
-            Login
-        </a>
-
-        <a href="register.php"
-           class="register-btn">
-
-            Register
-
-        </a>
-
-    </div>
-
-
-</nav>
-
-</header>
 
 
 
