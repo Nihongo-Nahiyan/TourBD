@@ -57,13 +57,17 @@ if(!isset($pageTitle)){
     <!-- LOGO -->
 
     <a
-        href="index.php"
-        class="brand"
-    >
+    href="index.php"
+    class="brand"
+>
 
-        ✈ TourBD
+    <span class="logo-mark">✈</span>
 
-    </a>
+    <span class="logo-text">
+        TourBD
+    </span>
+
+</a>
 
 
 
