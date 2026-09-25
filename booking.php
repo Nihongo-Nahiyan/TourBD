@@ -194,13 +194,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
        VALIDATE TRAVEL DATE
     ===================================================== */
 
-    elseif (
-        $travel_date !==
-        $package['departure_date']
-    ) {
+   
+    elseif($travel_date == ""){
 
         $message =
-            "Travel date must match the package departure date.";
+            "Please select a travel date.";
 
     }
 
@@ -1512,12 +1510,10 @@ require_once "includes/header.php";
                     type="date"
                     name="travel_date"
                     id="travelDate"
-                    class="input-control"
-                    value="<?php
-                        echo e($travel_date);
-                    ?>"
+                    value="<?php echo $travel_date; ?>"
+                    min="<?php echo date('Y-m-d'); ?>"
                     required
-                >
+>
 
 
                 <p class="form-help">
@@ -2052,11 +2048,9 @@ require_once "includes/header.php";
 
 
     date.min =
-        departureDate;
+    "<?php echo date('Y-m-d'); ?>";
 
-    date.max =
-        departureDate;
-
+    date.removeAttribute("max");
 
     date.addEventListener(
         "change",

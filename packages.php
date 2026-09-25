@@ -34,6 +34,17 @@ $category = $_GET['category'] ?? 'All';
 
 
 /* =========================================================
+   PAGINATION
+========================================================= */
+
+$page = max(1, (int)($_GET['page'] ?? 1));
+
+$perPage = 10;
+
+$offset = ($page - 1) * $perPage;
+
+
+/* =========================================================
    GET DESTINATIONS
 ========================================================= */
 
@@ -173,6 +184,73 @@ if ($maxPrice > 0) {
 
 
 /* =========================================================
+   PAGINATION COUNT
+========================================================= */
+
+$countSql = "
+    SELECT COUNT(*) AS total
+    FROM (
+        $sql
+    ) AS filtered_packages
+";
+
+$countStmt = mysqli_prepare(
+    $conn,
+    $countSql
+);
+
+if (!$countStmt) {
+
+    die(
+        "Count query preparation failed: "
+        . mysqli_error($conn)
+    );
+
+}
+
+if (!empty($params)) {
+
+    mysqli_stmt_bind_param(
+        $countStmt,
+        $types,
+        ...$params
+    );
+
+}
+
+mysqli_stmt_execute($countStmt);
+
+$countResult =
+    mysqli_stmt_get_result(
+        $countStmt
+    );
+
+$countRow =
+    mysqli_fetch_assoc(
+        $countResult
+    );
+
+$totalPackages =
+    (int)$countRow['total'];
+
+$totalPages =
+    max(
+        1,
+        (int)ceil(
+            $totalPackages / $perPage
+        )
+    );
+
+if ($page > $totalPages) {
+
+    $page = $totalPages;
+
+    $offset =
+        ($page - 1) * $perPage;
+}
+
+
+/* =========================================================
    SORTING
 ========================================================= */
 
@@ -213,6 +291,20 @@ switch ($sort) {
 
         break;
 }
+
+
+/* =========================================================
+   LIMIT + OFFSET
+========================================================= */
+
+$sql .= "
+    LIMIT ? OFFSET ?
+";
+
+$params[] = $perPage;
+$params[] = $offset;
+
+$types .= "ii";
 
 
 /* =========================================================
@@ -592,6 +684,8 @@ $packages = mysqli_stmt_get_result($stmt);
     }
 
 }
+
+
 /* =========================================================
    PACKAGES PAGE
 ========================================================= */
@@ -1456,99 +1550,103 @@ $packages = mysqli_stmt_get_result($stmt);
 
 <header class="site-header">
 
-    <nav class="navbar">
+    <div class="container">
 
-        <!-- LEFT: TOURBD LOGO -->
-        <a href="index.php" class="logo">
+        <nav class="navbar">
 
-            <span class="logo-mark">
-                ✈
-            </span>
+            <!-- LOGO -->
 
-            <span class="logo-text">
-                TourBD
-            </span>
+            <a href="index.php" class="brand">
 
-        </a>
+                <span class="logo-mark">✈</span>
 
-
-        <!-- CENTER NAVIGATION -->
-        <div class="nav-center">
-
-            <a href="index.php">
-                Home
-            </a>
-
-            <a
-                href="packages.php"
-                class="active"
-            >
-                Packages
-            </a>
-
-            <?php if(isset($_SESSION['user_id'])): ?>
-
-                <a href="my_bookings.php">
-                    My Bookings
-                </a>
-
-            <?php endif; ?>
-
-        </div>
-
-
-        <!-- RIGHT: USER -->
-        <div class="nav-right">
-
-            <?php if(isset($_SESSION['user_id'])): ?>
-
-                <span class="nav-user">
-
-                    <?php
-
-                    if(isset($_SESSION['name'])) {
-
-                        echo e($_SESSION['name']);
-
-                    }
-                    else {
-
-                        echo "User";
-
-                    }
-
-                    ?>
-
+                <span class="logo-text">
+                    TourBD
                 </span>
 
+            </a>
 
-                <a
-                    href="logout.php"
-                    class="register-btn"
-                >
-                    Logout
+
+            <!-- NAVIGATION -->
+
+            <div class="nav-links">
+
+                <a href="index.php">
+                    Home
                 </a>
 
-            <?php else: ?>
-
-                <a href="login.php">
-                    Login
+                <a href="packages.php" class="active">
+                    Packages
                 </a>
 
-                <a
-                    href="register.php"
-                    class="register-btn"
-                >
-                    Register
-                </a>
+                <?php if(isset($_SESSION['user_id'])): ?>
 
-            <?php endif; ?>
+                    <a href="my_bookings.php">
+                        My Bookings
+                    </a>
 
-        </div>
+                <?php endif; ?>
 
-    </nav>
+            </div>
+
+
+            <!-- RIGHT SIDE -->
+
+            <div class="nav-actions">
+
+                <?php if(isset($_SESSION['user_id'])): ?>
+
+                    <span class="user-name">
+
+                        <?php
+
+                        if(isset($_SESSION['name'])) {
+
+                            echo e($_SESSION['name']);
+
+                        } else {
+
+                            echo "User";
+
+                        }
+
+                        ?>
+
+                    </span>
+
+
+                    <a
+                        href="logout.php"
+                        class="btn-primary"
+                    >
+                        Logout
+                    </a>
+
+                <?php else: ?>
+
+                    <a href="login.php">
+                        Login
+                    </a>
+
+
+                    <a
+                        href="register.php"
+                        class="btn-primary"
+                    >
+                        Register
+                    </a>
+
+                <?php endif; ?>
+
+            </div>
+
+        </nav>
+
+    </div>
 
 </header>
+
+
 <!-- =========================================================
      PACKAGES PAGE
 ========================================================= -->
@@ -1934,11 +2032,7 @@ $packages = mysqli_stmt_get_result($stmt);
                 <strong>
 
                     <?php
-
-                    echo mysqli_num_rows(
-                        $packages
-                    );
-
+                    echo $totalPackages;
                     ?>
 
                 </strong>
@@ -2405,6 +2499,98 @@ $packages = mysqli_stmt_get_result($stmt);
 
 
                 </div>
+
+
+                <!-- =========================================================
+                     PAGINATION
+                ========================================================= -->
+
+                <?php if ($totalPages > 1): ?>
+
+                    <div class="pagination">
+
+                        <?php if ($page > 1): ?>
+
+                            <a
+                                href="?<?php
+                                    echo e(
+                                        http_build_query(
+                                            array_merge(
+                                                $_GET,
+                                                [
+                                                    'page' => $page - 1
+                                                ]
+                                            )
+                                        )
+                                    );
+                                ?>"
+                            >
+                                ← Previous
+                            </a>
+
+                        <?php endif; ?>
+
+
+                        <?php for (
+                            $i = 1;
+                            $i <= $totalPages;
+                            $i++
+                        ): ?>
+
+                            <?php if ($i == $page): ?>
+
+                                <span class="active">
+                                    <?php echo $i; ?>
+                                </span>
+
+                            <?php else: ?>
+
+                                <a
+                                    href="?<?php
+                                        echo e(
+                                            http_build_query(
+                                                array_merge(
+                                                    $_GET,
+                                                    [
+                                                        'page' => $i
+                                                    ]
+                                                )
+                                            )
+                                        );
+                                    ?>"
+                                >
+                                    <?php echo $i; ?>
+                                </a>
+
+                            <?php endif; ?>
+
+                        <?php endfor; ?>
+
+
+                        <?php if ($page < $totalPages): ?>
+
+                            <a
+                                href="?<?php
+                                    echo e(
+                                        http_build_query(
+                                            array_merge(
+                                                $_GET,
+                                                [
+                                                    'page' => $page + 1
+                                                ]
+                                            )
+                                        )
+                                    );
+                                ?>"
+                            >
+                                Next →
+                            </a>
+
+                        <?php endif; ?>
+
+                    </div>
+
+                <?php endif; ?>
 
 
             <?php endif; ?>
