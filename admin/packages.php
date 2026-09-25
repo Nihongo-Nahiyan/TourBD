@@ -746,128 +746,82 @@ $transport_result =
 
 
 /* =========================================
-   SEARCH
+   SEARCH + PAGINATION
 ========================================= */
 
+$search = isset($_GET['search']) && is_string($_GET['search'])
+    ? trim($_GET['search'])
+    : '';
 
-$search = "";
+// Use 1 so pagination is visible with your current 2 packages.
+// Change to 5 later if you want 5 packages per page.
+$per_page = 1;
+$page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
 
+/* COUNT MATCHING PACKAGES */
 
-if(isset($_GET['search'])){
-
-    $search =
-        trim($_GET['search']);
-
-}
-
-
-
-/* =========================================
-   GET PACKAGES
-========================================= */
-
-
-if($search != ''){
-
-
-    $package_sql = "
-
-    SELECT
-
-        tour_packages.*,
-
-        destinations.destination_name
-
+$count_sql = "
+    SELECT COUNT(*) AS total
     FROM tour_packages
-
-
     JOIN destinations
+      ON tour_packages.destination_id = destinations.destination_id
+";
 
-    ON tour_packages.destination_id =
-       destinations.destination_id
-
-
-    WHERE
-
-        tour_packages.package_name
-        LIKE ?
-
-        OR
-
-        destinations.destination_name
-        LIKE ?
-
-
-    ORDER BY tour_packages.package_id DESC
-
+if ($search !== '') {
+    $count_sql .= "
+        WHERE tour_packages.package_name LIKE ?
+           OR destinations.destination_name LIKE ?
     ";
-
-
-    $package_stmt =
-        mysqli_prepare(
-            $conn,
-            $package_sql
-        );
-
-
-    $search_value =
-        "%" . $search . "%";
-
-
+    $search_value = '%' . $search . '%';
+    $count_stmt = mysqli_prepare($conn, $count_sql);
     mysqli_stmt_bind_param(
-        $package_stmt,
-        "ss",
-        $search_value,
-        $search_value
+        $count_stmt, 'ss', $search_value, $search_value
     );
-
-
-    mysqli_stmt_execute(
-        $package_stmt
-    );
-
-
-    $package_result =
-        mysqli_stmt_get_result(
-            $package_stmt
-        );
-
-
+    mysqli_stmt_execute($count_stmt);
+    $count_result = mysqli_stmt_get_result($count_stmt);
+} else {
+    $count_result = mysqli_query($conn, $count_sql);
 }
 
-else{
+$total_packages = (int) mysqli_fetch_assoc($count_result)['total'];
+$total_pages = max(1, (int) ceil($total_packages / $per_page));
+$page = min($page, $total_pages);
+$offset = ($page - 1) * $per_page;
 
+/* GET PACKAGES FOR THE CURRENT PAGE */
 
-    $package_sql = "
-
-    SELECT
-
-        tour_packages.*,
-
-        destinations.destination_name
-
+$package_sql = "
+    SELECT tour_packages.*, destinations.destination_name
     FROM tour_packages
-
-
     JOIN destinations
+      ON tour_packages.destination_id = destinations.destination_id
+";
 
-    ON tour_packages.destination_id =
-       destinations.destination_id
-
-
-    ORDER BY tour_packages.package_id DESC
-
+if ($search !== '') {
+    $package_sql .= "
+        WHERE tour_packages.package_name LIKE ?
+           OR destinations.destination_name LIKE ?
     ";
-
-
-    $package_result =
-        mysqli_query(
-            $conn,
-            $package_sql
-        );
-
-
 }
+
+$package_sql .= "
+    ORDER BY tour_packages.package_id DESC
+    LIMIT ? OFFSET ?
+";
+
+$package_stmt = mysqli_prepare($conn, $package_sql);
+if ($search !== '') {
+    mysqli_stmt_bind_param(
+        $package_stmt, 'ssii',
+        $search_value, $search_value, $per_page, $offset
+    );
+} else {
+    mysqli_stmt_bind_param(
+        $package_stmt, 'ii', $per_page, $offset
+    );
+}
+mysqli_stmt_execute($package_stmt);
+$package_result = mysqli_stmt_get_result($package_stmt);
 
 
 ?>
@@ -896,6 +850,57 @@ Manage Tour Packages - TourBD
 rel="stylesheet"
 href="admin.css"
 >
+
+<style>
+/* Pagination for the Manage Tour Packages table */
+.package-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin: 22px 0 35px;
+    font-family: Arial, sans-serif;
+}
+.package-pagination-summary {
+    color: #626971;
+    font-size: 14px;
+    margin: 0;
+}
+.package-pagination-links {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.package-pagination-links a,
+.package-pagination-links span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    padding: 9px 13px;
+    border: 1px solid #dce5e4;
+    border-radius: 8px;
+    text-decoration: none;
+    background: #fff;
+    color: #167d76;
+    font-weight: 600;
+}
+.package-pagination-links a:hover,
+.package-pagination-links a.active,
+.package-pagination-links a[aria-current="page"] {
+    background: #157e78;
+    color: #fff;
+    border-color: #157e78;
+}
+.package-pagination-links .disabled {
+    color: #9ca3af;
+    background: #f5f5f5;
+    cursor: default;
+}
+</style>
+
 
 
 </head>
@@ -1270,7 +1275,7 @@ href="admin.css"
 ========================================= -->
 
 
-<section class="figma-package-table">
+<section class="figma-package-table" id="package-list">
 
 
 <table>
@@ -1713,7 +1718,45 @@ class="no-data"
 
 </section>
 
+<!-- PACKAGE PAGINATION: below the table, above Add / Edit Package -->
+<?php if ($total_packages > 0) { ?>
+<div class="package-pagination">
+    <p class="package-pagination-summary">
+        Showing <?php echo $offset + 1; ?>–<?php
+            echo min($offset + $per_page, $total_packages);
+        ?> of <?php echo $total_packages; ?> packages
+    </p>
 
+    <?php if ($total_pages > 1) { ?>
+    <nav class="package-pagination-links" aria-label="Package pages">
+        <?php if ($page > 1) { ?>
+            <a href="packages.php?<?php echo e(http_build_query([
+                'search' => $search, 'page' => $page - 1
+            ])); ?>#package-list">Previous</a>
+        <?php } else { ?>
+            <span class="disabled">Previous</span>
+        <?php } ?>
+
+        <?php for ($i = 1; $i <= $total_pages; $i++) { ?>
+            <a href="packages.php?<?php echo e(http_build_query([
+                'search' => $search, 'page' => $i
+            ])); ?>#package-list"
+               class="<?php echo $i === $page ? 'active' : ''; ?>"
+               <?php if ($i === $page) { ?>aria-current="page"<?php } ?>
+            ><?php echo $i; ?></a>
+        <?php } ?>
+
+        <?php if ($page < $total_pages) { ?>
+            <a href="packages.php?<?php echo e(http_build_query([
+                'search' => $search, 'page' => $page + 1
+            ])); ?>#package-list">Next</a>
+        <?php } else { ?>
+            <span class="disabled">Next</span>
+        <?php } ?>
+    </nav>
+    <?php } ?>
+</div>
+<?php } ?>
 
 <!-- =========================================
      ADD / EDIT PACKAGE FORM
@@ -2782,6 +2825,37 @@ class="cancel-edit-button"
 
 
 ?>
+<!-- =========================================
+     FOOTER
+========================================= -->
+
+
+<footer class="admin-footer">
+
+
+<div class="admin-footer-logo">
+
+    ✈ TourBD
+
+</div>
+
+
+<p>
+
+    © 2026 TourBD — Tour Package & Travel Booking Management System.
+    All rights reserved.
+
+</p>
+
+
+<p>
+
+    Cox's Bazar · Sajek · Sylhet · Bandarban
+
+</p>
+
+
+</footer>
 
 
 

@@ -467,27 +467,83 @@ if(isset($_GET['edit'])){
 
 
 /* =========================================
-   GET ALL DESTINATIONS
+   SEARCH AND PAGINATION
 ========================================= */
 
+// Read the search keyword and requested page.
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$per_page = 2; // Change to 5 (or another number) when you want more rows.
+$page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
 
-$destination_sql = "
-
-SELECT *
-
-FROM destinations
-
-ORDER BY destination_id DESC
-
-";
-
-
-$destination_result =
-    mysqli_query(
-        $conn,
-        $destination_sql
+// Count matching destinations, not just the destinations on this page.
+if ($search !== '') {
+    $search_value = '%' . $search . '%';
+    $filtered_count_sql = "
+        SELECT COUNT(*) AS matching_total
+        FROM destinations
+        WHERE destination_name LIKE ?
+           OR location LIKE ?
+           OR description LIKE ?
+    ";
+    $filtered_count_stmt = mysqli_prepare($conn, $filtered_count_sql);
+    mysqli_stmt_bind_param(
+        $filtered_count_stmt, 'sss',
+        $search_value, $search_value, $search_value
     );
+    mysqli_stmt_execute($filtered_count_stmt);
+    $filtered_count_result = mysqli_stmt_get_result($filtered_count_stmt);
+} else {
+    $filtered_count_result = mysqli_query(
+        $conn,
+        'SELECT COUNT(*) AS matching_total FROM destinations'
+    );
+}
 
+$matching_destinations = (int) mysqli_fetch_assoc(
+    $filtered_count_result
+)['matching_total'];
+
+$total_pages = max(1, (int) ceil($matching_destinations / $per_page));
+$page = min($page, $total_pages); // Avoid an empty page after deleting records.
+$offset = ($page - 1) * $per_page;
+
+// Fetch only the rows for the current page.
+if ($search !== '') {
+    $destination_sql = "
+        SELECT *
+        FROM destinations
+        WHERE destination_name LIKE ?
+           OR location LIKE ?
+           OR description LIKE ?
+        ORDER BY destination_id DESC
+        LIMIT ? OFFSET ?
+    ";
+    $destination_stmt = mysqli_prepare($conn, $destination_sql);
+    mysqli_stmt_bind_param(
+        $destination_stmt, 'sssii',
+        $search_value, $search_value, $search_value,
+        $per_page, $offset
+    );
+} else {
+    $destination_sql = "
+        SELECT *
+        FROM destinations
+        ORDER BY destination_id DESC
+        LIMIT ? OFFSET ?
+    ";
+    $destination_stmt = mysqli_prepare($conn, $destination_sql);
+    mysqli_stmt_bind_param(
+        $destination_stmt, 'ii',
+        $per_page, $offset
+    );
+}
+
+mysqli_stmt_execute($destination_stmt);
+$destination_result = mysqli_stmt_get_result($destination_stmt);
+
+// Numbers shown below the table.
+$first_shown = $matching_destinations > 0 ? $offset + 1 : 0;
+$last_shown = min($offset + $per_page, $matching_destinations);
 
 
 /* =========================================
@@ -568,6 +624,79 @@ Destinations - TourBD Admin
 rel="stylesheet"
 href="admin.css"
 >
+
+<!-- Destination search and pagination: page-specific styling -->
+<style>
+.destination-search-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 18px 0 22px;
+}
+.destination-search-form input[type="search"] {
+    flex: 1 1 240px;
+    max-width: 390px;
+    padding: 12px 15px;
+    border: 1px solid #d7dfde;
+    border-radius: 9px;
+    background: #fff;
+    color: #202b2a;
+    font: inherit;
+}
+.destination-search-form button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 9px;
+    color: white;
+    background: #087e78;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+.destination-search-form button:hover { background: #06655f; }
+.destination-clear-search {
+    text-decoration: none;
+    color: #087e78;
+    font-weight: 600;
+}
+.destination-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 22px;
+}
+.destination-page-info { color: #66746f; font-size: 14px; }
+.destination-page-links { display: flex; gap: 7px; flex-wrap: wrap; }
+.destination-page-links a,
+.destination-page-links span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    padding: 8px 12px;
+    border: 1px solid #d7dfde;
+    border-radius: 7px;
+    text-decoration: none;
+    color: #087e78;
+    background: #fff;
+    font-weight: 600;
+}
+.destination-page-links a:hover,
+.destination-page-links .current {
+    color: #fff;
+    background: #087e78;
+    border-color: #087e78;
+}
+.destination-page-links .disabled {
+    opacity: .4;
+    cursor: default;
+    color: #66746f;
+}
+</style>
+
 
 
 </head>
@@ -976,7 +1105,7 @@ href="admin.css"
 ========================================= -->
 
 
-<section class="admin-table-card">
+<section class="admin-table-card" id="destination-list">
 
 
     <div class="table-card-heading">
@@ -1004,7 +1133,19 @@ href="admin.css"
 
     </div>
 
-
+    <!-- SEARCH BAR -->
+    <form method="GET" action="destination.php#destination-list"
+          class="destination-search-form" role="search">
+        <input type="search" name="search"
+               value="<?php echo e($search); ?>"
+               placeholder="Search name, location or description..."
+               aria-label="Search destinations">
+        <button type="submit">Search</button>
+        <?php if ($search !== '') { ?>
+            <a href="destination.php#destination-list"
+               class="destination-clear-search">Clear</a>
+        <?php } ?>
+    </form>
 
     <div class="table-wrapper">
 
@@ -1394,9 +1535,45 @@ href="admin.css"
 
         </table>
 
-
     </div>
 
+    <!-- PAGINATION: keep the search term in every page link -->
+    <div class="destination-pagination">
+        <span class="destination-page-info">
+            Showing <?php echo $first_shown; ?>–<?php echo $last_shown; ?>
+            of <?php echo $matching_destinations; ?> destinations
+        </span>
+
+        <?php if ($total_pages > 1) { ?>
+            <nav class="destination-page-links" aria-label="Destination pages">
+                <?php if ($page > 1) { ?>
+                    <a href="destination.php?<?php echo e(http_build_query([
+                        'search' => $search, 'page' => $page - 1
+                    ])); ?>#destination-list">Previous</a>
+                <?php } else { ?>
+                    <span class="disabled">Previous</span>
+                <?php } ?>
+
+                <?php for ($n = 1; $n <= $total_pages; $n++) { ?>
+                    <a href="destination.php?<?php echo e(http_build_query([
+                        'search' => $search, 'page' => $n
+                    ])); ?>#destination-list"
+                       class="<?php echo $n === $page ? 'current' : ''; ?>"
+                       <?php if ($n === $page) { ?>aria-current="page"<?php } ?>>
+                        <?php echo $n; ?>
+                    </a>
+                <?php } ?>
+
+                <?php if ($page < $total_pages) { ?>
+                    <a href="destination.php?<?php echo e(http_build_query([
+                        'search' => $search, 'page' => $page + 1
+                    ])); ?>#destination-list">Next</a>
+                <?php } else { ?>
+                    <span class="disabled">Next</span>
+                <?php } ?>
+            </nav>
+        <?php } ?>
+    </div>
 
 </section>
 
@@ -1782,6 +1959,37 @@ id="destination-form"
 
 
 </section>
+<!-- =========================================
+     FOOTER
+========================================= -->
+
+
+<footer class="admin-footer">
+
+
+<div class="admin-footer-logo">
+
+    ✈ TourBD
+
+</div>
+
+
+<p>
+
+    © 2026 TourBD — Tour Package & Travel Booking Management System.
+    All rights reserved.
+
+</p>
+
+
+<p>
+
+    Cox's Bazar · Sajek · Sylhet · Bandarban
+
+</p>
+
+
+</footer>
 
 
 
