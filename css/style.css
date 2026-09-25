@@ -25,71 +25,227 @@ a{
 /* ================= NAVBAR ================= */
 
 
-.navbar{
+/* ================= NAVBAR ================= */
 
-    height:80px;
+.navbar {
+    height: 64px;
 
-    background:white;
+    background: #ffffff;
 
-    display:flex;
+    display: flex;
+    align-items: center;
 
-    justify-content:space-between;
+    padding: 0 80px;
 
-    align-items:center;
+    box-sizing: border-box;
 
-    padding:0 80px;
+    border-bottom: 1px solid #eeeeee;
 
+    position: relative;
+
+    z-index: 1000;
 }
 
 
+/* ================= LOGO ================= */
 
-.logo{
+.brand {
+    display: flex;
 
-    font-size:28px;
+    align-items: center;
 
-    font-weight:bold;
+    gap: 10px;
 
-    color:#07877e;
+    text-decoration: none;
 
+    color: #087f78 !important;
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size: 28px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
 }
 
 
+/* AIRPLANE ICON */
 
-.nav-links{
+.brand .logo-mark {
+    width: 36px;
 
-    display:flex;
+    height: 36px;
 
-    align-items:center;
+    display: flex;
 
-    gap:35px;
+    align-items: center;
 
+    justify-content: center;
+
+    background: #128078;
+
+    color: #111111;
+
+    border-radius: 10px;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 20px;
+
+    flex-shrink: 0;
 }
 
 
+/* TOURBD TEXT */
 
-.nav-links a{
+.brand .logo-text {
+    color: #087f78 !important;
 
-    color:#333;
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
 
-    font-size:16px;
+    font-size: 28px;
 
+    font-weight: 700;
 }
 
 
+/* ================= CENTER NAVIGATION ================= */
 
-.register-btn{
+.nav-links {
 
-    background:#07877e;
+    position: absolute;
 
-    color:white!important;
+    left: 50%;
 
-    padding:12px 25px;
+    transform: translateX(-50%);
 
-    border-radius:8px;
+    display: flex;
 
+    align-items: center;
+
+    gap: 35px;
+
+    height: 100%;
 }
 
 
+.nav-links a {
+
+    color: #111111;
+
+    text-decoration: none;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 16px;
+
+    font-weight: 500;
+
+    height: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    position: relative;
+}
+
+
+.nav-links a:hover {
+
+    color: #087f78;
+}
+
+
+/* ================= RIGHT SIDE ================= */
+
+.nav-actions {
+
+    margin-left: auto;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+}
+
+
+/* USER NAME */
+
+.nav-actions .user-name {
+
+    color: #111111;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 15px;
+
+    font-weight: 500;
+
+    white-space: nowrap;
+}
+
+
+/* ================= REGISTER / LOGOUT ================= */
+
+.nav-actions .btn-primary {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    height: 40px;
+
+    padding: 0 20px;
+
+    border: 1px solid #087f78;
+
+    border-radius: 8px;
+
+    background: #087f78;
+
+    color: #ffffff !important;
+
+    text-decoration: none;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    box-sizing: border-box;
+}
+
+
+.nav-actions .btn-primary:hover {
+
+    background: #066e68;
+
+    color: #ffffff !important;
+}
 
 
 
@@ -1673,4 +1829,95 @@ footer p{
         padding: 22px;
         box-sizing: border-box;
     }
+}
+/* =========================================================
+   FIX HEADER WIDTH + LOGO ICON
+========================================================= */
+
+/* Make the header fill the entire page */
+.site-header {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Remove the width limitation from the header container */
+.site-header .container {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Navbar fills the entire screen */
+.navbar {
+    width: 100%;
+    height: 80px;
+
+    padding: 0 80px;
+    margin: 0;
+
+    box-sizing: border-box;
+
+    background: #ffffff;
+    border-bottom: 1px solid #eeeeee;
+
+    display: flex;
+    align-items: center;
+}
+
+/* Make the airplane BLACK */
+.brand .logo-mark {
+    background: #128078 !important;
+    color: #111111 !important;
+
+    -webkit-text-fill-color: #111111 !important;
+}
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 28px;
+    padding-bottom: 10px;
+}
+
+.pagination a,
+.pagination span {
+    min-width: 36px;
+    height: 36px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+
+    border: 1px solid #d6d3d1;
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    color: #292524;
+
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.pagination a:hover {
+    border-color: #128078;
+    color: #087d75;
+}
+
+.pagination span.active {
+    background: #128078;
+    border-color: #128078;
+    color: #ffffff;
+    font-weight: 600;
 }
