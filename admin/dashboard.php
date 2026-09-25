@@ -1993,6 +1993,37 @@ href="admin.css"
 
     </section>
 
+<!-- =========================================
+     FOOTER
+========================================= -->
+
+
+<footer class="admin-footer">
+
+
+<div class="admin-footer-logo">
+
+    ✈ TourBD
+
+</div>
+
+
+<p>
+
+    © 2026 TourBD — Tour Package & Travel Booking Management System.
+    All rights reserved.
+
+</p>
+
+
+<p>
+
+    Cox's Bazar · Sajek · Sylhet · Bandarban
+
+</p>
+
+
+</footer>
 
 
 </main>

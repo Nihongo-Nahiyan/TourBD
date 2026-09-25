@@ -1,60 +1,42 @@
 <?php
 
-
 /* =========================================
    START SESSION
 ========================================= */
 
-
 if(session_status() === PHP_SESSION_NONE){
-
     session_start();
-
 }
-
 
 
 /* =========================================
    DATABASE CONNECTION
 ========================================= */
 
-
 require_once "../config/db.php";
-
 
 
 /* =========================================
    ADMIN SECURITY
 ========================================= */
 
-
 if(!isset($_SESSION['user_id'])){
-
     header("Location: ../login.php");
-
     exit;
-
 }
-
 
 if($_SESSION['role'] != 'admin'){
-
     header("Location: ../index.php");
-
     exit;
-
 }
-
 
 
 $message = "";
 
 
-
 /* =========================================
    ADD DESTINATION
 ========================================= */
-
 
 if(
     $_SERVER['REQUEST_METHOD'] === 'POST'
@@ -64,29 +46,22 @@ if(
     $_POST['action'] == 'add'
 ){
 
-
     $destination_name =
         trim($_POST['destination_name']);
-
 
     $location =
         trim($_POST['location']);
 
-
     $description =
         trim($_POST['description']);
-
 
     $image_url =
         trim($_POST['image_url']);
 
-
     $active = 1;
 
 
-
     /* CHECK REQUIRED FIELDS */
-
 
     if($destination_name == ''){
 
@@ -95,23 +70,15 @@ if(
 
     }
 
-
     else{
-
 
         /* CHECK DUPLICATE NAME */
 
-
         $check_sql = "
-
-        SELECT destination_id
-
-        FROM destinations
-
-        WHERE destination_name = ?
-
+            SELECT destination_id
+            FROM destinations
+            WHERE destination_name = ?
         ";
-
 
         $check_stmt =
             mysqli_prepare(
@@ -119,24 +86,20 @@ if(
                 $check_sql
             );
 
-
         mysqli_stmt_bind_param(
             $check_stmt,
             "s",
             $destination_name
         );
 
-
         mysqli_stmt_execute(
             $check_stmt
         );
-
 
         $check_result =
             mysqli_stmt_get_result(
                 $check_stmt
             );
-
 
 
         if(
@@ -145,46 +108,37 @@ if(
             ) > 0
         ){
 
-
             $message =
                 "This destination already exists.";
 
-
         }
-
 
         else{
 
-
             $insert_sql = "
-
-            INSERT INTO destinations
-            (
-                destination_name,
-                location,
-                description,
-                image_url,
-                active
-            )
-
-            VALUES
-            (
-                ?,
-                ?,
-                ?,
-                ?,
-                ?
-            )
-
+                INSERT INTO destinations
+                (
+                    destination_name,
+                    location,
+                    description,
+                    image_url,
+                    active
+                )
+                VALUES
+                (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?
+                )
             ";
-
 
             $insert_stmt =
                 mysqli_prepare(
                     $conn,
                     $insert_sql
                 );
-
 
             mysqli_stmt_bind_param(
                 $insert_stmt,
@@ -196,34 +150,23 @@ if(
                 $active
             );
 
-
             mysqli_stmt_execute(
                 $insert_stmt
             );
-
 
             header(
                 "Location: destination.php?added=1"
             );
 
-
             exit;
-
-
         }
-
-
     }
-
-
 }
-
 
 
 /* =========================================
    UPDATE DESTINATION
 ========================================= */
-
 
 if(
     $_SERVER['REQUEST_METHOD'] === 'POST'
@@ -233,30 +176,25 @@ if(
     $_POST['action'] == 'edit'
 ){
 
-
     $destination_id =
         intval(
             $_POST['destination_id']
         );
-
 
     $destination_name =
         trim(
             $_POST['destination_name']
         );
 
-
     $location =
         trim(
             $_POST['location']
         );
 
-
     $description =
         trim(
             $_POST['description']
         );
-
 
     $image_url =
         trim(
@@ -264,45 +202,30 @@ if(
         );
 
 
-
     if($destination_name == ''){
-
 
         $message =
             "Destination name is required.";
 
-
     }
-
 
     else{
 
-
         $update_sql = "
-
-        UPDATE destinations
-
-        SET
-
-            destination_name = ?,
-
-            location = ?,
-
-            description = ?,
-
-            image_url = ?
-
-        WHERE destination_id = ?
-
+            UPDATE destinations
+            SET
+                destination_name = ?,
+                location = ?,
+                description = ?,
+                image_url = ?
+            WHERE destination_id = ?
         ";
-
 
         $update_stmt =
             mysqli_prepare(
                 $conn,
                 $update_sql
             );
-
 
         mysqli_stmt_bind_param(
             $update_stmt,
@@ -314,36 +237,26 @@ if(
             $destination_id
         );
 
-
         mysqli_stmt_execute(
             $update_stmt
         );
-
 
         header(
             "Location: destination.php?updated=1"
         );
 
-
         exit;
-
-
     }
-
-
 }
-
 
 
 /* =========================================
    ACTIVE / INACTIVE
 ========================================= */
 
-
 if(
     isset($_GET['toggle'])
 ){
-
 
     $destination_id =
         intval(
@@ -351,24 +264,15 @@ if(
         );
 
 
-
     $toggle_sql = "
-
-    UPDATE destinations
-
-    SET active =
-
-        CASE
-
-            WHEN active = 1
-            THEN 0
-
-            ELSE 1
-
-        END
-
-    WHERE destination_id = ?
-
+        UPDATE destinations
+        SET active =
+            CASE
+                WHEN active = 1
+                THEN 0
+                ELSE 1
+            END
+        WHERE destination_id = ?
     ";
 
 
@@ -395,24 +299,18 @@ if(
         "Location: destination.php?status=1"
     );
 
-
     exit;
-
-
 }
-
 
 
 /* =========================================
    EDIT DESTINATION DATA
 ========================================= */
 
-
 $edit_destination = NULL;
 
 
 if(isset($_GET['edit'])){
-
 
     $edit_id =
         intval(
@@ -421,13 +319,9 @@ if(isset($_GET['edit'])){
 
 
     $edit_sql = "
-
-    SELECT *
-
-    FROM destinations
-
-    WHERE destination_id = ?
-
+        SELECT *
+        FROM destinations
+        WHERE destination_id = ?
     ";
 
 
@@ -460,24 +354,34 @@ if(isset($_GET['edit'])){
         mysqli_fetch_assoc(
             $edit_result
         );
-
-
 }
-
 
 
 /* =========================================
    SEARCH AND PAGINATION
 ========================================= */
 
-// Read the search keyword and requested page.
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
-$per_page = 2; // Change to 5 (or another number) when you want more rows.
-$page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
+$search =
+    isset($_GET['search'])
+        ? trim($_GET['search'])
+        : '';
 
-// Count matching destinations, not just the destinations on this page.
-if ($search !== '') {
-    $search_value = '%' . $search . '%';
+$per_page = 10;
+
+$page =
+    isset($_GET['page'])
+        ? max(1, (int) $_GET['page'])
+        : 1;
+
+
+/* COUNT MATCHING DESTINATIONS */
+
+if($search !== ''){
+
+    $search_value =
+        '%' . $search . '%';
+
+
     $filtered_count_sql = "
         SELECT COUNT(*) AS matching_total
         FROM destinations
@@ -485,30 +389,82 @@ if ($search !== '') {
            OR location LIKE ?
            OR description LIKE ?
     ";
-    $filtered_count_stmt = mysqli_prepare($conn, $filtered_count_sql);
+
+
+    $filtered_count_stmt =
+        mysqli_prepare(
+            $conn,
+            $filtered_count_sql
+        );
+
+
     mysqli_stmt_bind_param(
-        $filtered_count_stmt, 'sss',
-        $search_value, $search_value, $search_value
+        $filtered_count_stmt,
+        'sss',
+        $search_value,
+        $search_value,
+        $search_value
     );
-    mysqli_stmt_execute($filtered_count_stmt);
-    $filtered_count_result = mysqli_stmt_get_result($filtered_count_stmt);
-} else {
-    $filtered_count_result = mysqli_query(
-        $conn,
-        'SELECT COUNT(*) AS matching_total FROM destinations'
+
+
+    mysqli_stmt_execute(
+        $filtered_count_stmt
     );
+
+
+    $filtered_count_result =
+        mysqli_stmt_get_result(
+            $filtered_count_stmt
+        );
+
 }
 
-$matching_destinations = (int) mysqli_fetch_assoc(
-    $filtered_count_result
-)['matching_total'];
+else{
 
-$total_pages = max(1, (int) ceil($matching_destinations / $per_page));
-$page = min($page, $total_pages); // Avoid an empty page after deleting records.
-$offset = ($page - 1) * $per_page;
+    $filtered_count_result =
+        mysqli_query(
+            $conn,
+            'SELECT COUNT(*) AS matching_total
+             FROM destinations'
+        );
+}
 
-// Fetch only the rows for the current page.
-if ($search !== '') {
+
+$matching_destinations =
+    (int) mysqli_fetch_assoc(
+        $filtered_count_result
+    )['matching_total'];
+
+
+$total_pages =
+    max(
+        1,
+        (int) ceil(
+            $matching_destinations / $per_page
+        )
+    );
+
+
+/*
+   Prevent an invalid page after records
+   have been removed or the search changes.
+*/
+
+$page =
+    min(
+        $page,
+        $total_pages
+    );
+
+
+$offset =
+    ($page - 1) * $per_page;
+
+
+/* FETCH CURRENT PAGE */
+
+if($search !== ''){
+
     $destination_sql = "
         SELECT *
         FROM destinations
@@ -518,55 +474,113 @@ if ($search !== '') {
         ORDER BY destination_id DESC
         LIMIT ? OFFSET ?
     ";
-    $destination_stmt = mysqli_prepare($conn, $destination_sql);
+
+
+    $destination_stmt =
+        mysqli_prepare(
+            $conn,
+            $destination_sql
+        );
+
+
     mysqli_stmt_bind_param(
-        $destination_stmt, 'sssii',
-        $search_value, $search_value, $search_value,
-        $per_page, $offset
+        $destination_stmt,
+        'sssii',
+        $search_value,
+        $search_value,
+        $search_value,
+        $per_page,
+        $offset
     );
-} else {
+
+}
+
+else{
+
     $destination_sql = "
         SELECT *
         FROM destinations
         ORDER BY destination_id DESC
         LIMIT ? OFFSET ?
     ";
-    $destination_stmt = mysqli_prepare($conn, $destination_sql);
+
+
+    $destination_stmt =
+        mysqli_prepare(
+            $conn,
+            $destination_sql
+        );
+
+
     mysqli_stmt_bind_param(
-        $destination_stmt, 'ii',
-        $per_page, $offset
+        $destination_stmt,
+        'ii',
+        $per_page,
+        $offset
     );
 }
 
-mysqli_stmt_execute($destination_stmt);
-$destination_result = mysqli_stmt_get_result($destination_stmt);
 
-// Numbers shown below the table.
-$first_shown = $matching_destinations > 0 ? $offset + 1 : 0;
-$last_shown = min($offset + $per_page, $matching_destinations);
+mysqli_stmt_execute(
+    $destination_stmt
+);
+
+
+$destination_result =
+    mysqli_stmt_get_result(
+        $destination_stmt
+    );
+
+
+/* PAGINATION INFORMATION */
+
+$first_shown =
+    $matching_destinations > 0
+        ? $offset + 1
+        : 0;
+
+
+$last_shown =
+    min(
+        $offset + $per_page,
+        $matching_destinations
+    );
+
+
+/*
+   IMPORTANT:
+   This is only the number displayed on the website.
+   It is NOT the database destination_id.
+
+   Example:
+   Database IDs = 1, 2, 5
+   Website No.  = 1, 2, 3
+
+   On page 2 it automatically continues from 11,
+   21, etc. depending on the page size.
+*/
+
+$display_number =
+    $matching_destinations > 0
+        ? $offset + 1
+        : 1;
 
 
 /* =========================================
    COUNT DESTINATIONS
 ========================================= */
 
-
 $count_sql = "
-
-SELECT
-
-    COUNT(*) AS total,
-
-    SUM(
-        CASE
-            WHEN active = 1
-            THEN 1
-            ELSE 0
-        END
-    ) AS active_total
-
-FROM destinations
-
+    SELECT
+        COUNT(*) AS total,
+        SUM(
+            CASE
+                WHEN active = 1
+                THEN 1
+                ELSE 0
+            END
+        ) AS active_total
+    FROM destinations
 ";
 
 
@@ -594,39 +608,33 @@ $active_destinations =
 if($active_destinations === NULL){
 
     $active_destinations = 0;
-
 }
-
 
 ?>
 
 
 <!DOCTYPE html>
 
-
 <html>
-
 
 <head>
 
-
 <meta charset="UTF-8">
 
-
 <title>
-
-Destinations - TourBD Admin
-
+    Destinations - TourBD Admin
 </title>
 
-
 <link
-rel="stylesheet"
-href="admin.css"
+    rel="stylesheet"
+    href="admin.css"
 >
 
-<!-- Destination search and pagination: page-specific styling -->
+
+<!-- Destination search and pagination -->
+
 <style>
+
 .destination-search-form {
     display: flex;
     align-items: center;
@@ -634,6 +642,7 @@ href="admin.css"
     flex-wrap: wrap;
     margin: 18px 0 22px;
 }
+
 .destination-search-form input[type="search"] {
     flex: 1 1 240px;
     max-width: 390px;
@@ -644,6 +653,7 @@ href="admin.css"
     color: #202b2a;
     font: inherit;
 }
+
 .destination-search-form button {
     padding: 12px 20px;
     border: none;
@@ -654,12 +664,17 @@ href="admin.css"
     font-weight: 600;
     cursor: pointer;
 }
-.destination-search-form button:hover { background: #06655f; }
+
+.destination-search-form button:hover {
+    background: #06655f;
+}
+
 .destination-clear-search {
     text-decoration: none;
     color: #087e78;
     font-weight: 600;
 }
+
 .destination-pagination {
     display: flex;
     justify-content: space-between;
@@ -668,8 +683,18 @@ href="admin.css"
     gap: 14px;
     margin-top: 22px;
 }
-.destination-page-info { color: #66746f; font-size: 14px; }
-.destination-page-links { display: flex; gap: 7px; flex-wrap: wrap; }
+
+.destination-page-info {
+    color: #66746f;
+    font-size: 14px;
+}
+
+.destination-page-links {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
 .destination-page-links a,
 .destination-page-links span {
     display: inline-flex;
@@ -684,98 +709,73 @@ href="admin.css"
     background: #fff;
     font-weight: 600;
 }
+
 .destination-page-links a:hover,
 .destination-page-links .current {
     color: #fff;
     background: #087e78;
     border-color: #087e78;
 }
+
 .destination-page-links .disabled {
     opacity: .4;
     cursor: default;
     color: #66746f;
 }
+
 </style>
-
-
 
 </head>
 
 
-
 <body>
-
 
 
 <!-- =========================================
      TOP NAVBAR
 ========================================= -->
 
-
 <header class="top-navbar">
 
 
     <div class="top-logo">
 
-
         <div class="logo-icon">
-
             ✈
-
         </div>
 
-
         <span>
-
             TourBD
-
         </span>
-
 
     </div>
 
 
-
     <nav class="top-links">
 
-
         <a href="../index.php">
-
             Home
-
         </a>
-
 
         <a href="../packages.php">
-
             Packages
-
         </a>
-
 
         <a href="../my_bookings.php">
-
             My Bookings
-
         </a>
-
 
         <a
-        href="dashboard.php"
-        class="active"
+            href="dashboard.php"
+            class="active"
         >
-
             Admin
-
         </a>
-
 
     </nav>
 
 
-
     <div class="top-user">
-
 
         <strong>
 
@@ -789,46 +789,34 @@ href="admin.css"
 
 
         <span class="admin-badge">
-
             Admin
-
         </span>
 
 
         <a
-        href="../logout.php"
-        class="logout-button"
+            href="../logout.php"
+            class="logout-button"
         >
-
             Logout
-
         </a>
-
 
     </div>
 
-
 </header>
-
 
 
 <!-- =========================================
      SIDEBAR
 ========================================= -->
 
-
 <aside class="admin-sidebar">
 
 
     <div class="sidebar-title">
 
-
         <h2>
-
             Admin Panel
-
         </h2>
-
 
         <p>
 
@@ -840,150 +828,99 @@ href="admin.css"
 
         </p>
 
-
     </div>
-
 
 
     <div class="sidebar-menu">
 
-
         <a href="dashboard.php">
-
             📊 Overview
-
         </a>
-
 
         <a
-        href="destination.php"
-        class="active"
+            href="destination.php"
+            class="active"
         >
-
             🗺️ Destinations
-
         </a>
-
 
         <a href="packages.php">
-
             🎒 Packages
-
         </a>
-
 
         <a href="hotels.php">
-
             🏨 Hotels
-
         </a>
-
 
         <a href="transport.php">
-
             🚌 Transport
-
         </a>
-
 
         <a href="bookings.php">
-
             📋 Bookings
-
         </a>
-
 
         <a href="reports.php">
-
             📈 Reports
-
         </a>
-
 
     </div>
 
-
 </aside>
-
 
 
 <!-- =========================================
      MAIN
 ========================================= -->
 
-
 <main class="admin-main">
-
 
 
 <!-- PAGE TITLE -->
 
-
 <section class="admin-page-title">
-
 
     <div>
 
-
         <h1>
-
             Destinations
-
         </h1>
 
-
         <p>
-
             Manage travel destinations available in TourBD.
-
         </p>
-
 
     </div>
 
 
-
     <a
-    href="#destination-form"
-    class="add-admin-button"
+        href="#destination-form"
+        class="add-admin-button"
     >
-
         + Add Destination
-
     </a>
 
-
 </section>
-
 
 
 <!-- =========================================
      SUMMARY CARDS
 ========================================= -->
 
-
 <section class="destination-summary">
 
 
     <div class="destination-summary-card">
 
-
         <span>
-
             🗺️
-
         </span>
-
 
         <div>
 
-
             <p>
-
                 Total Destinations
-
             </p>
-
 
             <h2>
 
@@ -993,33 +930,22 @@ href="admin.css"
 
             </h2>
 
-
         </div>
-
 
     </div>
 
 
-
     <div class="destination-summary-card">
 
-
         <span>
-
             ✅
-
         </span>
-
 
         <div>
 
-
             <p>
-
                 Active Destinations
-
             </p>
-
 
             <h2>
 
@@ -1029,63 +955,45 @@ href="admin.css"
 
             </h2>
 
-
         </div>
-
 
     </div>
 
-
 </section>
-
 
 
 <!-- =========================================
      MESSAGE
 ========================================= -->
 
-
 <?php if(isset($_GET['added'])){ ?>
 
-
 <div class="admin-message success">
-
     Destination added successfully.
-
 </div>
-
 
 <?php } ?>
 
 
 <?php if(isset($_GET['updated'])){ ?>
 
-
 <div class="admin-message success">
-
     Destination updated successfully.
-
 </div>
-
 
 <?php } ?>
 
 
 <?php if(isset($_GET['status'])){ ?>
 
-
 <div class="admin-message success">
-
     Destination status updated successfully.
-
 </div>
-
 
 <?php } ?>
 
 
 <?php if($message != ''){ ?>
-
 
 <div class="admin-message error">
 
@@ -1095,57 +1003,71 @@ href="admin.css"
 
 </div>
 
-
 <?php } ?>
-
 
 
 <!-- =========================================
      DESTINATION TABLE
 ========================================= -->
 
-
-<section class="admin-table-card" id="destination-list">
+<section
+    class="admin-table-card"
+    id="destination-list"
+>
 
 
     <div class="table-card-heading">
 
-
         <div>
 
-
             <h2>
-
                 Destination List
-
             </h2>
 
-
             <p>
-
                 View and manage all destinations.
-
             </p>
-
 
         </div>
 
-
     </div>
 
+
     <!-- SEARCH BAR -->
-    <form method="GET" action="destination.php#destination-list"
-          class="destination-search-form" role="search">
-        <input type="search" name="search"
-               value="<?php echo e($search); ?>"
-               placeholder="Search name, location or description..."
-               aria-label="Search destinations">
-        <button type="submit">Search</button>
-        <?php if ($search !== '') { ?>
-            <a href="destination.php#destination-list"
-               class="destination-clear-search">Clear</a>
+
+    <form
+        method="GET"
+        action="destination.php#destination-list"
+        class="destination-search-form"
+        role="search"
+    >
+
+        <input
+            type="search"
+            name="search"
+            value="<?php echo e($search); ?>"
+            placeholder="Search name, location or description..."
+            aria-label="Search destinations"
+        >
+
+        <button type="submit">
+            Search
+        </button>
+
+
+        <?php if($search !== ''){ ?>
+
+            <a
+                href="destination.php#destination-list"
+                class="destination-clear-search"
+            >
+                Clear
+            </a>
+
         <?php } ?>
+
     </form>
+
 
     <div class="table-wrapper">
 
@@ -1155,57 +1077,43 @@ href="admin.css"
 
             <thead>
 
-
                 <tr>
 
+                    <!-- CHANGED:
+                         This is now only a display number -->
 
                     <th>
-
-                        ID
-
+                        No.
                     </th>
 
 
                     <th>
-
                         Destination
-
                     </th>
 
 
                     <th>
-
                         Location
-
                     </th>
 
 
                     <th>
-
                         Image
-
                     </th>
 
 
                     <th>
-
                         Status
-
                     </th>
 
 
                     <th>
-
                         Actions
-
                     </th>
-
 
                 </tr>
 
-
             </thead>
-
 
 
             <tbody>
@@ -1213,13 +1121,11 @@ href="admin.css"
 
             <?php
 
-
             if(
                 mysqli_num_rows(
                     $destination_result
                 ) > 0
             ){
-
 
                 while(
                     $destination =
@@ -1228,32 +1134,32 @@ href="admin.css"
                     )
                 ){
 
-
             ?>
 
 
                 <tr>
 
 
+                    <!--
+                        CHANGED:
+                        Do NOT display destination_id here.
+
+                        $display_number is only for the
+                        visible serial number.
+                    -->
+
                     <td class="booking-number">
 
-
                         #<?php
-                        echo $destination[
-                            'destination_id'
-                        ];
+                        echo $display_number++;
                         ?>
-
 
                     </td>
 
 
-
                     <td>
 
-
                         <strong>
-
 
                             <?php
                             echo e(
@@ -1263,12 +1169,10 @@ href="admin.css"
                             );
                             ?>
 
-
                         </strong>
 
 
                         <p class="table-description">
-
 
                             <?php
                             echo e(
@@ -1278,16 +1182,12 @@ href="admin.css"
                             );
                             ?>
 
-
                         </p>
-
 
                     </td>
 
 
-
                     <td>
-
 
                         <?php
                         echo e(
@@ -1297,16 +1197,12 @@ href="admin.css"
                         );
                         ?>
 
-
                     </td>
-
 
 
                     <td>
 
-
                         <?php
-
 
                         if(
                             $destination[
@@ -1314,146 +1210,116 @@ href="admin.css"
                             ] != ''
                         ){
 
-
                         ?>
 
-
                             <img
-
-                            src="../assets/images/<?php
-                            echo e(
-                                $destination[
-                                    'image_url'
-                                ]
-                            );
-                            ?>"
-
-                            class="admin-destination-image"
-
-                            alt="Destination image"
-
+                                src="../assets/images/<?php
+                                echo e(
+                                    $destination[
+                                        'image_url'
+                                    ]
+                                );
+                                ?>"
+                                class="admin-destination-image"
+                                alt="Destination image"
                             >
 
-
                         <?php
-
 
                         }
 
                         else{
 
-
                             echo "No image";
-
 
                         }
 
-
                         ?>
-
 
                     </td>
 
 
-
                     <td>
 
-
                         <?php
-
 
                         if(
                             $destination['active']
                             == 1
                         ){
 
-
                         ?>
 
-
                             <span class="
-                            destination-status
-                            active-status
+                                destination-status
+                                active-status
                             ">
-
                                 Active
-
                             </span>
 
-
                         <?php
-
 
                         }
 
                         else{
 
-
                         ?>
 
-
                             <span class="
-                            destination-status
-                            inactive-status
+                                destination-status
+                                inactive-status
                             ">
-
                                 Inactive
-
                             </span>
-
 
                         <?php
 
-
                         }
 
-
                         ?>
-
 
                     </td>
 
 
-
                     <td>
-
 
                         <div class="action-buttons">
 
 
+                            <!--
+                                IMPORTANT:
+                                The REAL database ID is still used
+                                here for editing.
+                            -->
+
                             <a
-
-                            href="destination.php?edit=<?php
-                            echo $destination[
-                                'destination_id'
-                            ];
-                            ?>#destination-form"
-
-                            class="edit-button"
-
+                                href="destination.php?edit=<?php
+                                echo $destination[
+                                    'destination_id'
+                                ];
+                                ?>#destination-form"
+                                class="edit-button"
                             >
-
                                 Edit
-
                             </a>
 
 
+                            <!--
+                                IMPORTANT:
+                                The REAL database ID is still used
+                                here for activating/deactivating.
+                            -->
 
                             <a
-
-                            href="destination.php?toggle=<?php
-                            echo $destination[
-                                'destination_id'
-                            ];
-                            ?>"
-
-                            class="status-button"
-
+                                href="destination.php?toggle=<?php
+                                echo $destination[
+                                    'destination_id'
+                                ];
+                                ?>"
+                                class="status-button"
                             >
 
-
                                 <?php
-
 
                                 if(
                                     $destination[
@@ -1461,345 +1327,371 @@ href="admin.css"
                                     ] == 1
                                 ){
 
-
                                     echo "Deactivate";
-
 
                                 }
 
                                 else{
 
-
                                     echo "Activate";
-
 
                                 }
 
-
                                 ?>
-
 
                             </a>
 
-
                         </div>
 
-
                     </td>
-
 
                 </tr>
 
 
             <?php
 
-
                 }
-
 
             }
 
             else{
 
-
             ?>
-
 
                 <tr>
 
-
                     <td
-                    colspan="6"
-                    class="no-data"
+                        colspan="6"
+                        class="no-data"
                     >
-
                         No destinations found.
-
                     </td>
-
 
                 </tr>
 
-
             <?php
 
-
             }
-
 
             ?>
 
 
             </tbody>
 
-
         </table>
 
     </div>
 
-    <!-- PAGINATION: keep the search term in every page link -->
+
+    <!-- =========================================
+         PAGINATION
+    ========================================= -->
+
     <div class="destination-pagination">
+
+
         <span class="destination-page-info">
-            Showing <?php echo $first_shown; ?>–<?php echo $last_shown; ?>
-            of <?php echo $matching_destinations; ?> destinations
+
+            Showing
+            <?php echo $first_shown; ?>
+            –
+            <?php echo $last_shown; ?>
+
+            of
+
+            <?php echo $matching_destinations; ?>
+
+            destinations
+
         </span>
 
-        <?php if ($total_pages > 1) { ?>
-            <nav class="destination-page-links" aria-label="Destination pages">
-                <?php if ($page > 1) { ?>
-                    <a href="destination.php?<?php echo e(http_build_query([
-                        'search' => $search, 'page' => $page - 1
-                    ])); ?>#destination-list">Previous</a>
-                <?php } else { ?>
-                    <span class="disabled">Previous</span>
-                <?php } ?>
 
-                <?php for ($n = 1; $n <= $total_pages; $n++) { ?>
-                    <a href="destination.php?<?php echo e(http_build_query([
-                        'search' => $search, 'page' => $n
-                    ])); ?>#destination-list"
-                       class="<?php echo $n === $page ? 'current' : ''; ?>"
-                       <?php if ($n === $page) { ?>aria-current="page"<?php } ?>>
-                        <?php echo $n; ?>
+        <?php if($total_pages > 1){ ?>
+
+
+            <nav
+                class="destination-page-links"
+                aria-label="Destination pages"
+            >
+
+
+                <?php if($page > 1){ ?>
+
+                    <a
+                        href="destination.php?<?php
+                        echo e(
+                            http_build_query([
+                                'search' => $search,
+                                'page' => $page - 1
+                            ])
+                        );
+                        ?>#destination-list"
+                    >
+                        Previous
                     </a>
+
+                <?php } else { ?>
+
+                    <span class="disabled">
+                        Previous
+                    </span>
+
                 <?php } ?>
 
-                <?php if ($page < $total_pages) { ?>
-                    <a href="destination.php?<?php echo e(http_build_query([
-                        'search' => $search, 'page' => $page + 1
-                    ])); ?>#destination-list">Next</a>
+
+                <?php
+
+                for(
+                    $n = 1;
+                    $n <= $total_pages;
+                    $n++
+                ){
+
+                ?>
+
+                    <a
+                        href="destination.php?<?php
+                        echo e(
+                            http_build_query([
+                                'search' => $search,
+                                'page' => $n
+                            ])
+                        );
+                        ?>#destination-list"
+
+                        class="<?php
+                        echo
+                            $n === $page
+                                ? 'current'
+                                : '';
+                        ?>"
+
+                        <?php
+                        if($n === $page){
+                        ?>
+                            aria-current="page"
+                        <?php
+                        }
+                        ?>
+                    >
+
+                        <?php
+                        echo $n;
+                        ?>
+
+                    </a>
+
+                <?php
+
+                }
+
+                ?>
+
+
+                <?php if($page < $total_pages){ ?>
+
+                    <a
+                        href="destination.php?<?php
+                        echo e(
+                            http_build_query([
+                                'search' => $search,
+                                'page' => $page + 1
+                            ])
+                        );
+                        ?>#destination-list"
+                    >
+                        Next
+                    </a>
+
                 <?php } else { ?>
-                    <span class="disabled">Next</span>
+
+                    <span class="disabled">
+                        Next
+                    </span>
+
                 <?php } ?>
+
+
             </nav>
+
+
         <?php } ?>
+
+
     </div>
 
-</section>
 
+</section>
 
 
 <!-- =========================================
      ADD / EDIT FORM
 ========================================= -->
 
-
 <section
-class="destination-form-card"
-id="destination-form"
+    class="destination-form-card"
+    id="destination-form"
 >
 
 
     <?php
 
-
     if($edit_destination){
-
 
     ?>
 
 
         <h2>
-
             Edit Destination
-
         </h2>
 
-
         <p>
-
             Update the selected destination information.
-
         </p>
 
 
     <?php
-
 
     }
 
     else{
 
-
     ?>
 
 
         <h2>
-
             Add New Destination
-
         </h2>
 
-
         <p>
-
             Add another travel destination to TourBD.
-
         </p>
 
 
     <?php
 
-
     }
-
 
     ?>
 
 
-
-    <form
-    method="POST"
-    >
-
+    <form method="POST">
 
 
         <?php
 
-
         if($edit_destination){
-
 
         ?>
 
 
             <input
-
-            type="hidden"
-
-            name="action"
-
-            value="edit"
-
+                type="hidden"
+                name="action"
+                value="edit"
             >
 
 
+            <!--
+                REAL DATABASE ID.
+                Keep this hidden ID.
+                Do NOT replace it with $display_number.
+            -->
+
             <input
-
-            type="hidden"
-
-            name="destination_id"
-
-            value="<?php
-            echo $edit_destination[
-                'destination_id'
-            ];
-            ?>"
-
+                type="hidden"
+                name="destination_id"
+                value="<?php
+                echo $edit_destination[
+                    'destination_id'
+                ];
+                ?>"
             >
 
 
         <?php
-
 
         }
 
         else{
 
-
         ?>
 
 
             <input
-
-            type="hidden"
-
-            name="action"
-
-            value="add"
-
+                type="hidden"
+                name="action"
+                value="add"
             >
 
 
         <?php
 
-
         }
 
-
         ?>
-
 
 
         <div class="admin-form-grid">
 
 
-
             <div class="admin-form-group">
 
-
                 <label>
-
                     Destination Name
-
                 </label>
 
-
                 <input
+                    type="text"
+                    name="destination_name"
 
-                type="text"
+                    value="<?php
 
-                name="destination_name"
+                    if($edit_destination){
 
-                value="<?php
+                        echo e(
+                            $edit_destination[
+                                'destination_name'
+                            ]
+                        );
 
-                if($edit_destination){
+                    }
 
-                    echo e(
-                        $edit_destination[
-                            'destination_name'
-                        ]
-                    );
+                    ?>"
 
-                }
-
-                ?>"
-
-                placeholder="Example: Cox's Bazar"
-
-                required
-
+                    placeholder="Example: Cox's Bazar"
+                    required
                 >
-
 
             </div>
 
 
-
             <div class="admin-form-group">
 
-
                 <label>
-
                     Location
-
                 </label>
 
-
                 <input
+                    type="text"
+                    name="location"
 
-                type="text"
+                    value="<?php
 
-                name="location"
+                    if($edit_destination){
 
-                value="<?php
+                        echo e(
+                            $edit_destination[
+                                'location'
+                            ]
+                        );
 
-                if($edit_destination){
+                    }
 
-                    echo e(
-                        $edit_destination[
-                            'location'
-                        ]
-                    );
+                    ?>"
 
-                }
-
-                ?>"
-
-                placeholder="Example: Chittagong"
-
+                    placeholder="Example: Chittagong"
                 >
-
 
             </div>
 
@@ -1807,25 +1699,16 @@ id="destination-form"
         </div>
 
 
-
         <div class="admin-form-group">
 
-
             <label>
-
                 Description
-
             </label>
 
-
             <textarea
-
-            name="description"
-
-            rows="4"
-
-            placeholder="Write a short destination description..."
-
+                name="description"
+                rows="4"
+                placeholder="Write a short destination description..."
             ><?php
 
             if($edit_destination){
@@ -1840,69 +1723,54 @@ id="destination-form"
 
             ?></textarea>
 
-
         </div>
-
 
 
         <div class="admin-form-group">
 
-
             <label>
-
                 Image Filename
-
             </label>
 
-
             <input
+                type="text"
+                name="image_url"
 
-            type="text"
+                value="<?php
 
-            name="image_url"
+                if($edit_destination){
 
-            value="<?php
+                    echo e(
+                        $edit_destination[
+                            'image_url'
+                        ]
+                    );
 
-            if($edit_destination){
+                }
 
-                echo e(
-                    $edit_destination[
-                        'image_url'
-                    ]
-                );
+                ?>"
 
-            }
-
-            ?>"
-
-            placeholder="Example: cox.jpg"
-
+                placeholder="Example: cox.jpg"
             >
 
 
             <small>
-
                 The image must exist inside
                 assets/images/.
-
             </small>
 
-
         </div>
-
 
 
         <div class="form-buttons">
 
 
             <button
-            type="submit"
-            class="save-destination-button"
+                type="submit"
+                class="save-destination-button"
             >
 
-
                 <?php
-
 
                 if($edit_destination){
 
@@ -1916,38 +1784,27 @@ id="destination-form"
 
                 }
 
-
                 ?>
-
 
             </button>
 
 
-
             <?php
-
 
             if($edit_destination){
 
-
             ?>
 
-
                 <a
-                href="destination.php"
-                class="cancel-edit-button"
+                    href="destination.php"
+                    class="cancel-edit-button"
                 >
-
                     Cancel
-
                 </a>
-
 
             <?php
 
-
             }
-
 
             ?>
 
@@ -1959,44 +1816,37 @@ id="destination-form"
 
 
 </section>
+
+
 <!-- =========================================
      FOOTER
 ========================================= -->
 
-
 <footer class="admin-footer">
 
 
-<div class="admin-footer-logo">
-
-    ✈ TourBD
-
-</div>
+    <div class="admin-footer-logo">
+        ✈ TourBD
+    </div>
 
 
-<p>
-
-    © 2026 TourBD — Tour Package & Travel Booking Management System.
-    All rights reserved.
-
-</p>
+    <p>
+        © 2026 TourBD — Tour Package & Travel Booking Management System.
+        All rights reserved.
+    </p>
 
 
-<p>
-
-    Cox's Bazar · Sajek · Sylhet · Bandarban
-
-</p>
+    <p>
+        Cox's Bazar · Sajek · Sylhet · Bandarban
+    </p>
 
 
 </footer>
-
 
 
 </main>
 
 
 </body>
-
 
 </html>

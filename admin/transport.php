@@ -1,4 +1,3 @@
-
 <?php
 
 /* =========================================
@@ -10,6 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once "../config/db.php";
+
 
 /* =========================================
    ADMIN SECURITY
@@ -30,6 +30,7 @@ date_default_timezone_set("Asia/Dhaka");
 $current_date = date("l, F j, Y");
 $message = "";
 
+
 /* =========================================
    ADD, EDIT AND DELETE TRANSPORT
 ========================================= */
@@ -37,6 +38,7 @@ $message = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $action = $_POST['action'] ?? '';
+
 
     /* =====================================
        ADD OR EDIT TRANSPORT
@@ -67,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $departure = trim(
             $_POST['departure'] ?? ''
         );
+
 
         /* VALIDATION */
 
@@ -249,6 +252,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 }
 
+
                 /* =============================
                    FIND THE UPDATED ROW'S PAGE
                 ============================= */
@@ -338,6 +342,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     (int)ceil($position / 10)
                 );
 
+
                 /* =============================
                    REDIRECT AND HIGHLIGHT
                 ============================= */
@@ -375,6 +380,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         }
     }
+
 
     /* =====================================
        DELETE TRANSPORT
@@ -472,6 +478,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+
 /* =========================================
    GET TRANSPORT FOR EDIT
 ========================================= */
@@ -516,6 +523,7 @@ if (isset($_GET['edit'])) {
 
     }
 }
+
 
 /* =========================================
    TRANSPORT SEARCH
@@ -573,6 +581,7 @@ if ($search !== '') {
 
 }
 
+
 /* =========================================
    PAGINATION
    10 TRANSPORT RECORDS PER PAGE
@@ -584,6 +593,7 @@ $page = max(
     1,
     (int)($_GET['page'] ?? 1)
 );
+
 
 /* =========================================
    COUNT MATCHING TRANSPORT
@@ -631,6 +641,7 @@ mysqli_stmt_close(
     $count_stmt
 );
 
+
 /* =========================================
    CALCULATE TOTAL PAGES
 ========================================= */
@@ -651,6 +662,7 @@ $page = min(
 $offset =
     ($page - 1)
     * $records_per_page;
+
 
 /* =========================================
    GET ONLY 10 TRANSPORT RECORDS
@@ -700,6 +712,7 @@ $transport_result =
         $transport_stmt
     );
 
+
 /* =========================================
    PRESERVE SEARCH DURING PAGINATION
 ========================================= */
@@ -721,6 +734,7 @@ function transportPageUrl(
 
 }
 
+
 /* =========================================
    RESULT COUNTER
 ========================================= */
@@ -735,6 +749,26 @@ $showing_to = min(
     $total_transport
 );
 
+
+/* =========================================
+   DISPLAY NUMBER
+========================================= */
+
+/*
+   This number is ONLY for display.
+
+   It is NOT the real transport_id.
+
+   The actual transport_id is still used
+   for Edit, Delete and database relationships.
+*/
+
+$display_number =
+    $total_transport > 0
+    ? $offset + 1
+    : 1;
+
+
 /* HIGHLIGHT THE UPDATED TRANSPORT */
 
 $highlight_id = max(
@@ -743,6 +777,7 @@ $highlight_id = max(
 );
 
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -907,11 +942,15 @@ $highlight_id = max(
     <div class="top-logo">
 
         <div class="logo-icon">
+
             ✈
+
         </div>
 
         <span>
+
             TourBD
+
         </span>
 
     </div>
@@ -919,22 +958,30 @@ $highlight_id = max(
     <nav class="top-links">
 
         <a href="../index.php">
+
             Home
+
         </a>
 
         <a href="../packages.php">
+
             Packages
+
         </a>
 
         <a href="../my_bookings.php">
+
             My Bookings
+
         </a>
 
         <a
             href="dashboard.php"
             class="active"
         >
+
             Admin
+
         </a>
 
     </nav>
@@ -942,27 +989,36 @@ $highlight_id = max(
     <div class="top-user">
 
         <strong>
+
             <?php
+
             echo e(
                 $_SESSION['name'] ?? 'Admin'
             );
+
             ?>
+
         </strong>
 
         <span class="admin-badge">
+
             Admin
+
         </span>
 
         <a
             href="../logout.php"
             class="logout-button"
         >
+
             Logout
+
         </a>
 
     </div>
 
 </header>
+
 
 <!-- =========================================
      ADMIN SIDEBAR
@@ -973,15 +1029,21 @@ $highlight_id = max(
     <div class="sidebar-title">
 
         <h2>
+
             Admin Panel
+
         </h2>
 
         <p>
+
             <?php
+
             echo e(
                 $_SESSION['name'] ?? 'Admin'
             );
+
             ?>
+
         </p>
 
     </div>
@@ -989,39 +1051,54 @@ $highlight_id = max(
     <div class="sidebar-menu">
 
         <a href="dashboard.php">
+
             📊 Overview
+
         </a>
 
         <a href="destination.php">
+
             🗺️ Destinations
+
         </a>
 
         <a href="packages.php">
+
             🎒 Packages
+
         </a>
 
         <a href="hotels.php">
+
             🏨 Hotels
+
         </a>
 
         <a
             href="transport.php"
             class="active"
         >
+
             🚌 Transport
+
         </a>
 
         <a href="bookings.php">
+
             📋 Bookings
+
         </a>
 
         <a href="reports.php">
+
             📈 Reports
+
         </a>
 
     </div>
 
 </aside>
+
 
 <!-- =========================================
      MAIN CONTENT
@@ -1038,17 +1115,23 @@ $highlight_id = max(
         <div>
 
             <h1>
+
                 Manage Transport
+
             </h1>
 
             <p>
+
                 TourBD Admin ·
+
                 <?php echo e($current_date); ?>
+
             </p>
 
         </div>
 
     </section>
+
 
     <!-- ADD TRANSPORT BUTTON -->
 
@@ -1058,10 +1141,13 @@ $highlight_id = max(
             href="#transport-form"
             class="transport-add-button"
         >
+
             + Add Transport
+
         </a>
 
     </div>
+
 
     <!-- =====================================
          MESSAGES
@@ -1077,6 +1163,7 @@ $highlight_id = max(
 
     <?php endif; ?>
 
+
     <?php if (isset($_GET['updated'])): ?>
 
         <div class="admin-message success">
@@ -1087,6 +1174,7 @@ $highlight_id = max(
 
     <?php endif; ?>
 
+
     <?php if (isset($_GET['deleted'])): ?>
 
         <div class="admin-message success">
@@ -1096,6 +1184,7 @@ $highlight_id = max(
         </div>
 
     <?php endif; ?>
+
 
     <?php if (isset($_GET['cannotdelete'])): ?>
 
@@ -1108,6 +1197,7 @@ $highlight_id = max(
 
     <?php endif; ?>
 
+
     <?php if ($message !== ''): ?>
 
         <div class="admin-message error">
@@ -1117,6 +1207,7 @@ $highlight_id = max(
         </div>
 
     <?php endif; ?>
+
 
     <!-- =====================================
          SEARCH BAR
@@ -1135,37 +1226,50 @@ $highlight_id = max(
             <option
                 value="type"
                 <?php
+
                 echo $search_by === 'type'
                     ? 'selected'
                     : '';
+
                 ?>
             >
+
                 Type
+
             </option>
 
             <option
                 value="route"
                 <?php
+
                 echo $search_by === 'route'
                     ? 'selected'
                     : '';
+
                 ?>
             >
+
                 Route
+
             </option>
 
             <option
                 value="operator"
                 <?php
+
                 echo $search_by === 'operator'
                     ? 'selected'
                     : '';
+
                 ?>
             >
+
                 Operator
+
             </option>
 
         </select>
+
 
         <!-- SEARCH INPUT -->
 
@@ -1173,16 +1277,22 @@ $highlight_id = max(
             type="text"
             name="search"
             value="<?php
+
             echo e($search);
+
             ?>"
             placeholder="Search transport..."
         >
 
+
         <!-- SEARCH BUTTON -->
 
         <button type="submit">
+
             Search
+
         </button>
+
 
         <!-- CLEAR SEARCH -->
 
@@ -1192,12 +1302,15 @@ $highlight_id = max(
                 href="transport.php"
                 class="clear-search"
             >
+
                 Clear
+
             </a>
 
         <?php endif; ?>
 
     </form>
+
 
     <!-- =====================================
          TRANSPORT TABLE
@@ -1225,6 +1338,7 @@ $highlight_id = max(
 
         </p>
 
+
         <div class="table-wrapper">
 
             <table class="transport-admin-table">
@@ -1251,6 +1365,7 @@ $highlight_id = max(
 
                 </thead>
 
+
                 <tbody>
 
                     <?php if (
@@ -1258,6 +1373,7 @@ $highlight_id = max(
                             $transport_result
                         ) > 0
                     ): ?>
+
 
                         <?php while (
                             $transport =
@@ -1279,30 +1395,39 @@ $highlight_id = max(
 
                             ?>
 
+
                             <!-- =====================
                                  TRANSPORT ROW
                             ====================== -->
 
                             <tr
                                 id="transport-<?php
+
                                 echo $current_transport_id;
+
                                 ?>"
                                 class="<?php
+
                                 echo $is_highlighted
                                     ? 'transport-highlight'
                                     : '';
+
                                 ?>"
                             >
 
-                                <!-- ID -->
+
+                                <!-- DISPLAY NUMBER -->
 
                                 <td class="transport-id">
 
                                     <?php
-                                    echo $current_transport_id;
+
+                                    echo $display_number++;
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- TYPE -->
 
@@ -1311,71 +1436,87 @@ $highlight_id = max(
                                     <span class="transport-type">
 
                                         <?php
+
                                         echo e(
                                             $transport['type']
                                         );
+
                                         ?>
 
                                     </span>
 
                                 </td>
 
+
                                 <!-- ROUTE -->
 
                                 <td class="transport-route">
 
                                     <?php
+
                                     echo e(
                                         $transport['route']
                                     );
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- OPERATOR -->
 
                                 <td>
 
                                     <?php
+
                                     echo e(
                                         $transport['provider']
                                     );
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- PRICE -->
 
                                 <td class="transport-price">
 
                                     ৳<?php
+
                                     echo number_format(
                                         (float)$transport[
                                             'price_per_person'
                                         ],
                                         0
                                     );
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- DEPARTURE -->
 
                                 <td class="transport-departure">
 
                                     <?php
+
                                     echo e(
                                         $transport['departure']
                                     );
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- ACTIONS -->
 
                                 <td>
 
                                     <div class="transport-action-buttons">
+
 
                                         <!-- EDIT -->
 
@@ -1394,16 +1535,21 @@ $highlight_id = max(
 
                                         <a
                                             href="transport.php?<?php
+
                                             echo e(
                                                 http_build_query(
                                                     $edit_params
                                                 )
                                             );
+
                                             ?>#transport-form"
                                             class="transport-edit-button"
                                         >
+
                                             Edit
+
                                         </a>
+
 
                                         <!-- DELETE -->
 
@@ -1426,7 +1572,9 @@ $highlight_id = max(
                                                 type="hidden"
                                                 name="transport_id"
                                                 value="<?php
+
                                                 echo $current_transport_id;
+
                                                 ?>"
                                             >
 
@@ -1434,7 +1582,9 @@ $highlight_id = max(
                                                 type="submit"
                                                 class="transport-delete-button"
                                             >
+
                                                 Delete
+
                                             </button>
 
                                         </form>
@@ -1446,6 +1596,7 @@ $highlight_id = max(
                             </tr>
 
                         <?php endwhile; ?>
+
 
                     <?php else: ?>
 
@@ -1470,6 +1621,7 @@ $highlight_id = max(
 
         </div>
 
+
         <!-- =====================================
              PAGINATION
         ====================================== -->
@@ -1478,25 +1630,33 @@ $highlight_id = max(
 
             <div class="pagination">
 
+
                 <!-- PREVIOUS -->
 
                 <a
                     href="<?php
+
                     echo e(
                         transportPageUrl(
                             max(1, $page - 1),
                             $pagination_params
                         )
                     );
+
                     ?>"
                     class="<?php
+
                     echo $page <= 1
                         ? 'disabled'
                         : '';
+
                     ?>"
                 >
+
                     Previous
+
                 </a>
+
 
                 <!-- PAGE NUMBERS -->
 
@@ -1505,6 +1665,7 @@ $highlight_id = max(
                     $i <= $total_pages;
                     $i++
                 ): ?>
+
 
                     <?php if ($i === $page): ?>
 
@@ -1518,25 +1679,31 @@ $highlight_id = max(
 
                         <a
                             href="<?php
+
                             echo e(
                                 transportPageUrl(
                                     $i,
                                     $pagination_params
                                 )
                             );
+
                             ?>"
                         >
+
                             <?php echo $i; ?>
+
                         </a>
 
                     <?php endif; ?>
 
                 <?php endfor; ?>
 
+
                 <!-- NEXT -->
 
                 <a
                     href="<?php
+
                     echo e(
                         transportPageUrl(
                             min(
@@ -1546,21 +1713,29 @@ $highlight_id = max(
                             $pagination_params
                         )
                     );
+
                     ?>"
                     class="<?php
+
                     echo $page >= $total_pages
                         ? 'disabled'
                         : '';
+
                     ?>"
                 >
+
                     Next
+
                 </a>
+
 
             </div>
 
         <?php endif; ?>
 
+
     </section>
+
 
     <!-- =====================================
          ADD / EDIT TRANSPORT FORM
@@ -1574,9 +1749,11 @@ $highlight_id = max(
         <h2>
 
             <?php
+
             echo $edit_transport
                 ? "Edit Transport"
                 : "Add New Transport";
+
             ?>
 
         </h2>
@@ -1584,14 +1761,18 @@ $highlight_id = max(
         <p>
 
             <?php
+
             echo $edit_transport
                 ? "Update the selected transport information."
                 : "Add a new transport option for TourBD packages.";
+
             ?>
 
         </p>
 
+
         <form method="POST">
+
 
             <!-- ACTION -->
 
@@ -1599,11 +1780,14 @@ $highlight_id = max(
                 type="hidden"
                 name="action"
                 value="<?php
+
                 echo $edit_transport
                     ? 'edit'
                     : 'add';
+
                 ?>"
             >
+
 
             <!-- =================================
                  REMEMBER PAGE AND SEARCH
@@ -1613,7 +1797,9 @@ $highlight_id = max(
                 type="hidden"
                 name="return_page"
                 value="<?php
+
                 echo $page;
+
                 ?>"
             >
 
@@ -1621,7 +1807,9 @@ $highlight_id = max(
                 type="hidden"
                 name="return_search"
                 value="<?php
+
                 echo e($search);
+
                 ?>"
             >
 
@@ -1629,9 +1817,12 @@ $highlight_id = max(
                 type="hidden"
                 name="return_search_by"
                 value="<?php
+
                 echo e($search_by);
+
                 ?>"
             >
+
 
             <!-- TRANSPORT ID WHEN EDITING -->
 
@@ -1641,13 +1832,16 @@ $highlight_id = max(
                     type="hidden"
                     name="transport_id"
                     value="<?php
+
                     echo (int)$edit_transport[
                         'transport_id'
                     ];
+
                     ?>"
                 >
 
             <?php endif; ?>
+
 
             <!-- =================================
                  FIRST ROW
@@ -1655,12 +1849,15 @@ $highlight_id = max(
 
             <div class="transport-form-grid">
 
+
                 <!-- TYPE -->
 
                 <div class="admin-form-group">
 
                     <label>
+
                         Transport Type
+
                     </label>
 
                     <select
@@ -1690,18 +1887,24 @@ $highlight_id = max(
 
                             <option
                                 value="<?php
+
                                 echo e($type_option);
+
                                 ?>"
                                 <?php
+
                                 echo $selected_type ===
                                     $type_option
                                     ? 'selected'
                                     : '';
+
                                 ?>
                             >
 
                                 <?php
+
                                 echo e($type_option);
+
                                 ?>
 
                             </option>
@@ -1712,21 +1915,26 @@ $highlight_id = max(
 
                 </div>
 
+
                 <!-- ROUTE -->
 
                 <div class="admin-form-group">
 
                     <label>
+
                         Route
+
                     </label>
 
                     <input
                         type="text"
                         name="route"
                         value="<?php
+
                         echo e(
                             $edit_transport['route'] ?? ''
                         );
+
                         ?>"
                         placeholder="Example: Dhaka to Cox's Bazar"
                         required
@@ -1734,21 +1942,26 @@ $highlight_id = max(
 
                 </div>
 
+
                 <!-- OPERATOR -->
 
                 <div class="admin-form-group">
 
                     <label>
+
                         Operator
+
                     </label>
 
                     <input
                         type="text"
                         name="provider"
                         value="<?php
+
                         echo e(
                             $edit_transport['provider'] ?? ''
                         );
+
                         ?>"
                         placeholder="Example: Green Line"
                         required
@@ -1758,18 +1971,22 @@ $highlight_id = max(
 
             </div>
 
+
             <!-- =================================
                  SECOND ROW
             ================================== -->
 
             <div class="transport-form-grid-two">
 
+
                 <!-- PRICE -->
 
                 <div class="admin-form-group">
 
                     <label>
+
                         Price Per Person
+
                     </label>
 
                     <input
@@ -1778,11 +1995,13 @@ $highlight_id = max(
                         min="0"
                         step="0.01"
                         value="<?php
+
                         echo e(
                             $edit_transport[
                                 'price_per_person'
                             ] ?? ''
                         );
+
                         ?>"
                         placeholder="Example: 1500"
                         required
@@ -1790,21 +2009,26 @@ $highlight_id = max(
 
                 </div>
 
+
                 <!-- DEPARTURE -->
 
                 <div class="admin-form-group">
 
                     <label>
+
                         Departure
+
                     </label>
 
                     <input
                         type="text"
                         name="departure"
                         value="<?php
+
                         echo e(
                             $edit_transport['departure'] ?? ''
                         );
+
                         ?>"
                         placeholder="Example: 10:00 PM"
                     >
@@ -1812,6 +2036,7 @@ $highlight_id = max(
                 </div>
 
             </div>
+
 
             <!-- =================================
                  FORM BUTTONS
@@ -1825,36 +2050,45 @@ $highlight_id = max(
                 >
 
                     <?php
+
                     echo $edit_transport
                         ? "Update Transport"
                         : "Add Transport";
+
                     ?>
 
                 </button>
+
 
                 <?php if ($edit_transport): ?>
 
                     <a
                         href="<?php
+
                         echo e(
                             transportPageUrl(
                                 $page,
                                 $pagination_params
                             )
                         );
+
                         ?>"
                         class="cancel-edit-button"
                     >
+
                         Cancel
+
                     </a>
 
                 <?php endif; ?>
 
             </div>
 
+
         </form>
 
     </section>
+
 
     <!-- =====================================
          FOOTER
@@ -1863,17 +2097,23 @@ $highlight_id = max(
     <footer class="admin-footer">
 
         <div class="admin-footer-logo">
+
             ✈ TourBD
+
         </div>
 
         <p>
+
             © 2026 TourBD — Tour Package & Travel
             Booking Management System.
             All rights reserved.
+
         </p>
 
         <p>
+
             Cox's Bazar · Sajek · Sylhet · Bandarban
+
         </p>
 
     </footer>
@@ -1881,4 +2121,5 @@ $highlight_id = max(
 </main>
 
 </body>
+
 </html>

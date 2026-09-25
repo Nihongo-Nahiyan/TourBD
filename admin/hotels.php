@@ -1,4 +1,3 @@
-
 <?php
 
 /* =========================================
@@ -10,6 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once "../config/db.php";
+
 
 /* ADMIN SECURITY */
 
@@ -27,6 +27,7 @@ date_default_timezone_set("Asia/Dhaka");
 
 $current_date = date("l, F j, Y");
 $message = "";
+
 
 /* =========================================
    ADD, EDIT AND DELETE HOTEL
@@ -386,6 +387,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+
     /* =====================================
        DELETE HOTEL
     ===================================== */
@@ -460,6 +462,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+
 /* =========================================
    GET HOTEL FOR EDIT
 ========================================= */
@@ -497,6 +500,7 @@ if (isset($_GET['edit'])) {
     }
 }
 
+
 /* =========================================
    GET DESTINATIONS
 ========================================= */
@@ -510,6 +514,7 @@ $destination_result = mysqli_query(
     ORDER BY destination_name
     "
 );
+
 
 /* =========================================
    HOTEL SEARCH
@@ -548,6 +553,7 @@ if ($search !== '') {
         "%" . $search . "%";
 }
 
+
 /* =========================================
    PAGINATION: 10 HOTELS PER PAGE
 ========================================= */
@@ -558,6 +564,7 @@ $page = max(
     1,
     (int)($_GET['page'] ?? 1)
 );
+
 
 /* =========================================
    COUNT MATCHING HOTELS
@@ -598,6 +605,7 @@ $total_hotels =
 
 mysqli_stmt_close($count_stmt);
 
+
 /* =========================================
    CALCULATE TOTAL PAGES
 ========================================= */
@@ -616,6 +624,7 @@ $page = min(
 
 $offset =
     ($page - 1) * $records_per_page;
+
 
 /* =========================================
    GET ONLY 10 HOTELS
@@ -664,6 +673,7 @@ mysqli_stmt_execute($hotel_stmt);
 $hotel_result =
     mysqli_stmt_get_result($hotel_stmt);
 
+
 /* =========================================
    PRESERVE SEARCH DURING PAGINATION
 ========================================= */
@@ -681,6 +691,7 @@ function hotelPageUrl($page, $params) {
         . http_build_query($params);
 }
 
+
 /* =========================================
    RESULT COUNTER
 ========================================= */
@@ -695,6 +706,27 @@ $showing_to = min(
     $total_hotels
 );
 
+
+/* =========================================
+   DISPLAY NUMBER
+========================================= */
+
+/*
+   This number is ONLY for display.
+
+   It is NOT the real hotel_id.
+
+   The actual hotel_id is still used
+   for Edit, Delete and database
+   relationships.
+*/
+
+$display_number =
+    $total_hotels > 0
+    ? $offset + 1
+    : 1;
+
+
 /* =========================================
    UPDATED HOTEL HIGHLIGHT
 ========================================= */
@@ -705,6 +737,7 @@ $highlight_id = max(
 );
 
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -856,7 +889,9 @@ $highlight_id = max(
     <div class="top-logo">
 
         <div class="logo-icon">
+
             ✈
+
         </div>
 
         <span>TourBD</span>
@@ -866,22 +901,30 @@ $highlight_id = max(
     <nav class="top-links">
 
         <a href="../index.php">
+
             Home
+
         </a>
 
         <a href="../packages.php">
+
             Packages
+
         </a>
 
         <a href="../my_bookings.php">
+
             My Bookings
+
         </a>
 
         <a
             href="dashboard.php"
             class="active"
         >
+
             Admin
+
         </a>
 
     </nav>
@@ -889,25 +932,34 @@ $highlight_id = max(
     <div class="top-user">
 
         <strong>
+
             <?php
+
             echo e($_SESSION['name'] ?? 'Admin');
+
             ?>
+
         </strong>
 
         <span class="admin-badge">
+
             Admin
+
         </span>
 
         <a
             href="../logout.php"
             class="logout-button"
         >
+
             Logout
+
         </a>
 
     </div>
 
 </header>
+
 
 <!-- =========================================
      ADMIN SIDEBAR
@@ -920,9 +972,13 @@ $highlight_id = max(
         <h2>Admin Panel</h2>
 
         <p>
+
             <?php
+
             echo e($_SESSION['name'] ?? 'Admin');
+
             ?>
+
         </p>
 
     </div>
@@ -930,39 +986,54 @@ $highlight_id = max(
     <div class="sidebar-menu">
 
         <a href="dashboard.php">
+
             📊 Overview
+
         </a>
 
         <a href="destination.php">
+
             🗺️ Destinations
+
         </a>
 
         <a href="packages.php">
+
             🎒 Packages
+
         </a>
 
         <a
             href="hotels.php"
             class="active"
         >
+
             🏨 Hotels
+
         </a>
 
         <a href="transport.php">
+
             🚌 Transport
+
         </a>
 
         <a href="bookings.php">
+
             📋 Bookings
+
         </a>
 
         <a href="reports.php">
+
             📈 Reports
+
         </a>
 
     </div>
 
 </aside>
+
 
 <!-- =========================================
      MAIN CONTENT
@@ -979,13 +1050,17 @@ $highlight_id = max(
             <h1>Manage Hotels</h1>
 
             <p>
+
                 TourBD Admin ·
+
                 <?php echo e($current_date); ?>
+
             </p>
 
         </div>
 
     </section>
+
 
     <!-- ADD HOTEL BUTTON -->
 
@@ -995,10 +1070,13 @@ $highlight_id = max(
             href="#hotel-form"
             class="hotel-add-button"
         >
+
             + Add Hotel
+
         </a>
 
     </div>
+
 
     <!-- =====================================
          MESSAGES
@@ -1007,26 +1085,35 @@ $highlight_id = max(
     <?php if (isset($_GET['added'])): ?>
 
         <div class="admin-message success">
+
             Hotel added successfully.
+
         </div>
 
     <?php endif; ?>
+
 
     <?php if (isset($_GET['updated'])): ?>
 
         <div class="admin-message success">
+
             Hotel updated successfully.
+
         </div>
 
     <?php endif; ?>
+
 
     <?php if (isset($_GET['deleted'])): ?>
 
         <div class="admin-message success">
+
             Hotel deleted successfully.
+
         </div>
 
     <?php endif; ?>
+
 
     <?php if (isset($_GET['cannotdelete'])): ?>
 
@@ -1039,13 +1126,17 @@ $highlight_id = max(
 
     <?php endif; ?>
 
+
     <?php if ($message !== ''): ?>
 
         <div class="admin-message error">
+
             <?php echo e($message); ?>
+
         </div>
 
     <?php endif; ?>
+
 
     <!-- =====================================
          HOTEL SEARCH BAR
@@ -1062,23 +1153,31 @@ $highlight_id = max(
             <option
                 value="hotel_name"
                 <?php
+
                 echo $search_by === 'hotel_name'
                     ? 'selected'
                     : '';
+
                 ?>
             >
+
                 Hotel Name
+
             </option>
 
             <option
                 value="destination"
                 <?php
+
                 echo $search_by === 'destination'
                     ? 'selected'
                     : '';
+
                 ?>
             >
+
                 Destination
+
             </option>
 
         </select>
@@ -1091,7 +1190,9 @@ $highlight_id = max(
         >
 
         <button type="submit">
+
             Search
+
         </button>
 
         <?php if ($search !== ''): ?>
@@ -1100,12 +1201,15 @@ $highlight_id = max(
                 href="hotels.php"
                 class="clear-search"
             >
+
                 Clear
+
             </a>
 
         <?php endif; ?>
 
     </form>
+
 
     <!-- =====================================
          HOTEL TABLE
@@ -1131,6 +1235,7 @@ $highlight_id = max(
 
         </p>
 
+
         <div class="table-wrapper">
 
             <table class="hotel-admin-table">
@@ -1140,11 +1245,17 @@ $highlight_id = max(
                     <tr>
 
                         <th>#</th>
+
                         <th>Hotel Name</th>
+
                         <th>Destination</th>
+
                         <th>Stars</th>
+
                         <th>Price/Night</th>
+
                         <th>Amenities</th>
+
                         <th>Actions</th>
 
                     </tr>
@@ -1178,86 +1289,108 @@ $highlight_id = max(
 
                             <tr
                                 id="hotel-<?php
+
                                 echo $current_hotel_id;
+
                                 ?>"
                                 class="<?php
+
                                 echo $is_highlighted
                                     ? 'hotel-highlight'
                                     : '';
+
                                 ?>"
                             >
 
-                                <!-- HOTEL ID -->
+                                <!-- DISPLAY NUMBER -->
 
                                 <td class="hotel-id">
 
                                     <?php
-                                    echo $current_hotel_id;
+
+                                    echo $display_number++;
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- HOTEL NAME -->
 
                                 <td class="hotel-name">
 
                                     <?php
+
                                     echo e(
                                         $hotel['hotel_name']
                                     );
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- DESTINATION -->
 
                                 <td>
 
                                     <?php
+
                                     echo e(
                                         $hotel['destination_name']
                                     );
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- STARS -->
 
                                 <td class="hotel-stars">
 
                                     <?php
+
                                     echo str_repeat(
                                         "★",
                                         (int)$hotel['stars']
                                     );
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- PRICE -->
 
                                 <td class="hotel-price">
 
                                     ৳<?php
+
                                     echo number_format(
                                         (float)$hotel['price_per_night'],
                                         0
                                     );
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- AMENITIES -->
 
                                 <td class="hotel-amenities">
 
                                     <?php
+
                                     echo e(
                                         $hotel['amenities']
                                     );
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- ACTIONS -->
 
@@ -1282,16 +1415,21 @@ $highlight_id = max(
 
                                         <a
                                             href="hotels.php?<?php
+
                                             echo e(
                                                 http_build_query(
                                                     $edit_params
                                                 )
                                             );
+
                                             ?>#hotel-form"
                                             class="hotel-edit-button"
                                         >
+
                                             Edit
+
                                         </a>
+
 
                                         <!-- DELETE -->
 
@@ -1314,7 +1452,9 @@ $highlight_id = max(
                                                 type="hidden"
                                                 name="hotel_id"
                                                 value="<?php
+
                                                 echo $current_hotel_id;
+
                                                 ?>"
                                             >
 
@@ -1322,7 +1462,9 @@ $highlight_id = max(
                                                 type="submit"
                                                 class="hotel-delete-button"
                                             >
+
                                                 Delete
+
                                             </button>
 
                                         </form>
@@ -1343,7 +1485,9 @@ $highlight_id = max(
                                 colspan="7"
                                 class="no-data"
                             >
+
                                 No hotels found.
+
                             </td>
 
                         </tr>
@@ -1355,6 +1499,7 @@ $highlight_id = max(
             </table>
 
         </div>
+
 
         <!-- =====================================
              PAGINATION
@@ -1368,21 +1513,28 @@ $highlight_id = max(
 
                 <a
                     href="<?php
+
                     echo e(
                         hotelPageUrl(
                             max(1, $page - 1),
                             $pagination_params
                         )
                     );
+
                     ?>"
                     class="<?php
+
                     echo $page <= 1
                         ? 'disabled'
                         : '';
+
                     ?>"
                 >
+
                     Previous
+
                 </a>
+
 
                 <!-- PAGE NUMBERS -->
 
@@ -1395,32 +1547,40 @@ $highlight_id = max(
                     <?php if ($i === $page): ?>
 
                         <span class="active">
+
                             <?php echo $i; ?>
+
                         </span>
 
                     <?php else: ?>
 
                         <a
                             href="<?php
+
                             echo e(
                                 hotelPageUrl(
                                     $i,
                                     $pagination_params
                                 )
                             );
+
                             ?>"
                         >
+
                             <?php echo $i; ?>
+
                         </a>
 
                     <?php endif; ?>
 
                 <?php endfor; ?>
 
+
                 <!-- NEXT -->
 
                 <a
                     href="<?php
+
                     echo e(
                         hotelPageUrl(
                             min(
@@ -1430,14 +1590,19 @@ $highlight_id = max(
                             $pagination_params
                         )
                     );
+
                     ?>"
                     class="<?php
+
                     echo $page >= $total_pages
                         ? 'disabled'
                         : '';
+
                     ?>"
                 >
+
                     Next
+
                 </a>
 
             </div>
@@ -1445,6 +1610,7 @@ $highlight_id = max(
         <?php endif; ?>
 
     </section>
+
 
     <!-- =====================================
          ADD / EDIT HOTEL FORM
@@ -1458,9 +1624,11 @@ $highlight_id = max(
         <h2>
 
             <?php
+
             echo $edit_hotel
                 ? "Edit Hotel"
                 : "Add New Hotel";
+
             ?>
 
         </h2>
@@ -1468,12 +1636,15 @@ $highlight_id = max(
         <p>
 
             <?php
+
             echo $edit_hotel
                 ? "Update hotel information."
                 : "Add another hotel to a TourBD destination.";
+
             ?>
 
         </p>
+
 
         <form method="POST">
 
@@ -1483,9 +1654,12 @@ $highlight_id = max(
                 type="hidden"
                 name="action"
                 value="<?php
+
                 echo $edit_hotel ? 'edit' : 'add';
+
                 ?>"
             >
+
 
             <!-- =================================
                  REMEMBER PAGE AND SEARCH
@@ -1509,6 +1683,7 @@ $highlight_id = max(
                 value="<?php echo e($search_by); ?>"
             >
 
+
             <!-- HOTEL ID WHEN EDITING -->
 
             <?php if ($edit_hotel): ?>
@@ -1517,11 +1692,14 @@ $highlight_id = max(
                     type="hidden"
                     name="hotel_id"
                     value="<?php
+
                     echo (int)$edit_hotel['hotel_id'];
+
                     ?>"
                 >
 
             <?php endif; ?>
+
 
             <!-- FIRST ROW -->
 
@@ -1537,15 +1715,18 @@ $highlight_id = max(
                         type="text"
                         name="hotel_name"
                         value="<?php
+
                         echo e(
                             $edit_hotel['hotel_name'] ?? ''
                         );
+
                         ?>"
                         placeholder="Example: Sea Pearl Hotel"
                         required
                     >
 
                 </div>
+
 
                 <!-- DESTINATION -->
 
@@ -1559,7 +1740,9 @@ $highlight_id = max(
                     >
 
                         <option value="">
+
                             Select Destination
+
                         </option>
 
                         <?php while (
@@ -1570,25 +1753,39 @@ $highlight_id = max(
 
                             <option
                                 value="<?php
-                                echo (int)$destination['destination_id'];
+
+                                echo (int)$destination[
+                                    'destination_id'
+                                ];
+
                                 ?>"
                                 <?php
+
                                 echo (
                                     $edit_hotel
                                     &&
-                                    (int)$edit_hotel['destination_id']
+                                    (int)$edit_hotel[
+                                        'destination_id'
+                                    ]
                                     ===
-                                    (int)$destination['destination_id']
+                                    (int)$destination[
+                                        'destination_id'
+                                    ]
                                 )
                                     ? 'selected'
                                     : '';
+
                                 ?>
                             >
 
                                 <?php
+
                                 echo e(
-                                    $destination['destination_name']
+                                    $destination[
+                                        'destination_name'
+                                    ]
                                 );
+
                                 ?>
 
                             </option>
@@ -1598,6 +1795,7 @@ $highlight_id = max(
                     </select>
 
                 </div>
+
 
                 <!-- CONTACT -->
 
@@ -1609,9 +1807,11 @@ $highlight_id = max(
                         type="text"
                         name="contact"
                         value="<?php
+
                         echo e(
                             $edit_hotel['contact'] ?? ''
                         );
+
                         ?>"
                         placeholder="Example: 01800000000"
                     >
@@ -1619,6 +1819,7 @@ $highlight_id = max(
                 </div>
 
             </div>
+
 
             <!-- SECOND ROW -->
 
@@ -1644,6 +1845,7 @@ $highlight_id = max(
                             <option
                                 value="<?php echo $star; ?>"
                                 <?php
+
                                 echo (
                                     (int)(
                                         $edit_hotel['stars'] ?? 3
@@ -1651,9 +1853,12 @@ $highlight_id = max(
                                 )
                                     ? 'selected'
                                     : '';
+
                                 ?>
                             >
+
                                 <?php echo $star; ?> Star
+
                             </option>
 
                         <?php endfor; ?>
@@ -1661,6 +1866,7 @@ $highlight_id = max(
                     </select>
 
                 </div>
+
 
                 <!-- PRICE -->
 
@@ -1674,9 +1880,13 @@ $highlight_id = max(
                         min="0"
                         step="0.01"
                         value="<?php
+
                         echo e(
-                            $edit_hotel['price_per_night'] ?? ''
+                            $edit_hotel[
+                                'price_per_night'
+                            ] ?? ''
                         );
+
                         ?>"
                         placeholder="Example: 6500"
                         required
@@ -1685,6 +1895,7 @@ $highlight_id = max(
                 </div>
 
             </div>
+
 
             <!-- AMENITIES -->
 
@@ -1696,18 +1907,23 @@ $highlight_id = max(
                     type="text"
                     name="amenities"
                     value="<?php
+
                     echo e(
                         $edit_hotel['amenities'] ?? ''
                     );
+
                     ?>"
                     placeholder="Example: Pool, Spa, Sea View, WiFi"
                 >
 
                 <small>
+
                     Separate amenities using commas.
+
                 </small>
 
             </div>
+
 
             <!-- FORM BUTTONS -->
 
@@ -1719,27 +1935,34 @@ $highlight_id = max(
                 >
 
                     <?php
+
                     echo $edit_hotel
                         ? "Update Hotel"
                         : "Add Hotel";
+
                     ?>
 
                 </button>
+
 
                 <?php if ($edit_hotel): ?>
 
                     <a
                         href="<?php
+
                         echo e(
                             hotelPageUrl(
                                 $page,
                                 $pagination_params
                             )
                         );
+
                         ?>"
                         class="cancel-edit-button"
                     >
+
                         Cancel
+
                     </a>
 
                 <?php endif; ?>
@@ -1750,21 +1973,28 @@ $highlight_id = max(
 
     </section>
 
+
     <!-- FOOTER -->
 
     <footer class="admin-footer">
 
         <div class="admin-footer-logo">
+
             ✈ TourBD
+
         </div>
 
         <p>
+
             © 2026 TourBD — Tour Package & Travel Booking
             Management System. All rights reserved.
+
         </p>
 
         <p>
+
             Cox's Bazar · Sajek · Sylhet · Bandarban
+
         </p>
 
     </footer>
@@ -1772,4 +2002,5 @@ $highlight_id = max(
 </main>
 
 </body>
+
 </html>

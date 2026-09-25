@@ -1,4 +1,3 @@
-
 <?php
 
 /* =========================================
@@ -10,6 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once "../config/db.php";
+
 
 /* ADMIN SECURITY */
 
@@ -28,6 +28,7 @@ date_default_timezone_set("Asia/Dhaka");
 $current_date = date("l, F j, Y");
 $message = "";
 
+
 /* =========================================
    CONFIRM AND CANCEL BOOKING
 ========================================= */
@@ -40,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($booking_id <= 0) {
         $message = "Invalid booking ID.";
     }
+
 
     /* =====================================
        CONFIRM BOOKING
@@ -86,12 +88,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             exit;
-
         }
 
         $message = "Could not confirm booking.";
         mysqli_stmt_close($stmt);
     }
+
 
     /* =====================================
        CANCEL BOOKING
@@ -138,6 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception("Booking is already cancelled.");
             }
 
+
             /* UPDATE BOOKING STATUS */
 
             $cancel_sql = "
@@ -160,6 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             mysqli_stmt_close($stmt);
+
 
             /* RESTORE PACKAGE SEATS */
 
@@ -209,6 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+
 /* =========================================
    DASHBOARD SUMMARY
 ========================================= */
@@ -223,6 +228,7 @@ $total_result = mysqli_query(
 $total_bookings = (int)mysqli_fetch_assoc(
     $total_result
 )['total'];
+
 
 /* CONFIRMED */
 
@@ -239,6 +245,7 @@ $total_confirmed = (int)mysqli_fetch_assoc(
     $confirmed_result
 )['total'];
 
+
 /* PENDING */
 
 $pending_result = mysqli_query(
@@ -253,6 +260,7 @@ $pending_result = mysqli_query(
 $total_pending = (int)mysqli_fetch_assoc(
     $pending_result
 )['total'];
+
 
 /* CANCELLED */
 
@@ -269,6 +277,7 @@ $total_cancelled = (int)mysqli_fetch_assoc(
     $cancelled_result
 )['total'];
 
+
 /* PAID REVENUE */
 
 $revenue_result = mysqli_query(
@@ -283,6 +292,7 @@ $revenue_result = mysqli_query(
 $total_revenue = (float)mysqli_fetch_assoc(
     $revenue_result
 )['total'];
+
 
 /* =========================================
    GET FILTER VALUES
@@ -301,6 +311,7 @@ $payment_filter = strtolower(
 $destination_filter = (int)(
     $_GET['destination'] ?? 0
 );
+
 
 /* VALIDATE FILTERS */
 
@@ -336,6 +347,7 @@ if (
     $payment_filter = '';
 }
 
+
 /* =========================================
    BUILD FILTER QUERY
 ========================================= */
@@ -344,6 +356,7 @@ $where = "WHERE 1 = 1";
 
 $params = [];
 $types = "";
+
 
 /* SEARCH BY NAME, EMAIL, PACKAGE OR ID */
 
@@ -367,6 +380,7 @@ if ($search !== '') {
     $types .= "ssss";
 }
 
+
 /* BOOKING STATUS */
 
 if ($status_filter !== '') {
@@ -378,6 +392,7 @@ if ($status_filter !== '') {
     $params[] = $status_filter;
     $types .= "s";
 }
+
 
 /* PAYMENT STATUS */
 
@@ -392,7 +407,8 @@ if ($payment_filter !== '') {
             )
         ";
 
-    } else {
+    }
+    else {
 
         $where .= "
             AND LOWER(p.payment_status) = ?
@@ -402,6 +418,7 @@ if ($payment_filter !== '') {
         $types .= "s";
     }
 }
+
 
 /* DESTINATION */
 
@@ -414,6 +431,7 @@ if ($destination_filter > 0) {
     $params[] = $destination_filter;
     $types .= "i";
 }
+
 
 /* =========================================
    SHARED TABLE JOINS
@@ -446,6 +464,7 @@ $joins = "
         ON b.booking_id = p.booking_id
 ";
 
+
 /* =========================================
    PAGINATION: 10 BOOKINGS PER PAGE
 ========================================= */
@@ -457,7 +476,10 @@ $page = max(
     (int)($_GET['page'] ?? 1)
 );
 
-/* COUNT FILTERED BOOKINGS */
+
+/* =========================================
+   COUNT FILTERED BOOKINGS
+========================================= */
 
 $count_sql = "
     SELECT COUNT(*) AS total
@@ -489,24 +511,33 @@ $count_row = mysqli_fetch_assoc(
     $count_result
 );
 
-$total_filtered_bookings = (int)$count_row['total'];
+$total_filtered_bookings =
+    (int)$count_row['total'];
 
 mysqli_stmt_close($count_stmt);
 
-/* CALCULATE TOTAL PAGES */
+
+/* =========================================
+   CALCULATE TOTAL PAGES
+========================================= */
 
 $total_pages = max(
     1,
     (int)ceil(
-        $total_filtered_bookings / $records_per_page
+        $total_filtered_bookings /
+        $records_per_page
     )
 );
 
-$page = min($page, $total_pages);
+$page = min(
+    $page,
+    $total_pages
+);
 
 $offset = (
     $page - 1
 ) * $records_per_page;
+
 
 /* =========================================
    GET ONLY 10 BOOKINGS
@@ -567,6 +598,7 @@ $booking_result = mysqli_stmt_get_result(
     $booking_stmt
 );
 
+
 /* =========================================
    FILTERED REVENUE
 ========================================= */
@@ -615,6 +647,7 @@ $filtered_revenue = (float)mysqli_fetch_assoc(
 
 mysqli_stmt_close($revenue_stmt);
 
+
 /* =========================================
    DESTINATION DROPDOWN
 ========================================= */
@@ -627,6 +660,7 @@ $destination_result = mysqli_query(
     ORDER BY destination_name
     "
 );
+
 
 /* =========================================
    PRESERVE FILTERS DURING PAGINATION
@@ -646,9 +680,13 @@ function bookingPageUrl($page, $params) {
     return "bookings.php?" . http_build_query($params);
 }
 
-/* PAGE COUNTER */
 
-$showing_from = $total_filtered_bookings > 0
+/* =========================================
+   PAGE COUNTER
+========================================= */
+
+$showing_from =
+    $total_filtered_bookings > 0
     ? $offset + 1
     : 0;
 
@@ -657,7 +695,28 @@ $showing_to = min(
     $total_filtered_bookings
 );
 
+
+/* =========================================
+   DISPLAY NUMBER
+========================================= */
+
+/*
+   This is ONLY the number shown in the
+   first column of the table.
+
+   It is NOT the real booking_id.
+
+   The actual booking_id is still used
+   internally for Confirm and Cancel.
+*/
+
+$display_number =
+    $total_filtered_bookings > 0
+    ? $offset + 1
+    : 1;
+
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -780,9 +839,13 @@ $showing_to = min(
     <div class="top-user">
 
         <strong>
+
             <?php
+
             echo e($_SESSION['name'] ?? 'Admin');
+
             ?>
+
         </strong>
 
         <span class="admin-badge">
@@ -800,6 +863,7 @@ $showing_to = min(
 
 </header>
 
+
 <!-- =========================================
      ADMIN SIDEBAR
 ========================================= -->
@@ -811,9 +875,13 @@ $showing_to = min(
         <h2>Admin Panel</h2>
 
         <p>
+
             <?php
+
             echo e($_SESSION['name'] ?? 'Admin');
+
             ?>
+
         </p>
 
     </div>
@@ -855,6 +923,7 @@ $showing_to = min(
 
 </aside>
 
+
 <!-- =========================================
      MAIN CONTENT
 ========================================= -->
@@ -868,11 +937,15 @@ $showing_to = min(
         <h1>Manage Bookings</h1>
 
         <p>
+
             TourBD Admin ·
+
             <?php echo e($current_date); ?>
+
         </p>
 
     </section>
+
 
     <!-- =====================================
          SUMMARY CARDS
@@ -893,6 +966,7 @@ $showing_to = min(
 
         </div>
 
+
         <div class="
             booking-summary-card
             booking-confirmed-card
@@ -905,6 +979,7 @@ $showing_to = min(
             <p>Confirmed</p>
 
         </div>
+
 
         <div class="
             booking-summary-card
@@ -919,6 +994,7 @@ $showing_to = min(
 
         </div>
 
+
         <div class="
             booking-summary-card
             booking-cancelled-card
@@ -932,18 +1008,23 @@ $showing_to = min(
 
         </div>
 
+
         <div class="
             booking-summary-card
             booking-revenue-card
         ">
 
             <h2>
+
                 ৳<?php
+
                 echo number_format(
                     $total_revenue,
                     0
                 );
+
                 ?>
+
             </h2>
 
             <p>Revenue (Paid)</p>
@@ -952,6 +1033,7 @@ $showing_to = min(
 
     </section>
 
+
     <!-- =====================================
          MESSAGES
     ===================================== -->
@@ -959,35 +1041,47 @@ $showing_to = min(
     <?php if (isset($_GET['confirmed'])): ?>
 
         <div class="admin-message success">
+
             Booking confirmed successfully.
+
         </div>
 
     <?php endif; ?>
+
 
     <?php if (isset($_GET['cancelled'])): ?>
 
         <div class="admin-message success">
+
             Booking cancelled successfully.
+
         </div>
 
     <?php endif; ?>
+
 
     <?php if (isset($_GET['error'])): ?>
 
         <div class="admin-message error">
+
             Booking could not be updated.
             Check whether its payment is paid.
+
         </div>
 
     <?php endif; ?>
+
 
     <?php if ($message !== ''): ?>
 
         <div class="admin-message error">
+
             <?php echo e($message); ?>
+
         </div>
 
     <?php endif; ?>
+
 
     <!-- =====================================
          SEARCH AND FILTER
@@ -1008,6 +1102,7 @@ $showing_to = min(
             placeholder="Search name, ID, package..."
         >
 
+
         <!-- BOOKING STATUS -->
 
         <select name="status">
@@ -1019,9 +1114,11 @@ $showing_to = min(
             <option
                 value="confirmed"
                 <?php
+
                 echo $status_filter === 'confirmed'
                     ? 'selected'
                     : '';
+
                 ?>
             >
                 Confirmed
@@ -1030,9 +1127,11 @@ $showing_to = min(
             <option
                 value="pending"
                 <?php
+
                 echo $status_filter === 'pending'
                     ? 'selected'
                     : '';
+
                 ?>
             >
                 Pending
@@ -1041,15 +1140,18 @@ $showing_to = min(
             <option
                 value="cancelled"
                 <?php
+
                 echo $status_filter === 'cancelled'
                     ? 'selected'
                     : '';
+
                 ?>
             >
                 Cancelled
             </option>
 
         </select>
+
 
         <!-- PAYMENT STATUS -->
 
@@ -1062,9 +1164,11 @@ $showing_to = min(
             <option
                 value="paid"
                 <?php
+
                 echo $payment_filter === 'paid'
                     ? 'selected'
                     : '';
+
                 ?>
             >
                 Paid
@@ -1073,9 +1177,11 @@ $showing_to = min(
             <option
                 value="pending"
                 <?php
+
                 echo $payment_filter === 'pending'
                     ? 'selected'
                     : '';
+
                 ?>
             >
                 Pending
@@ -1084,15 +1190,18 @@ $showing_to = min(
             <option
                 value="refunded"
                 <?php
+
                 echo $payment_filter === 'refunded'
                     ? 'selected'
                     : '';
+
                 ?>
             >
                 Refunded
             </option>
 
         </select>
+
 
         <!-- DESTINATION -->
 
@@ -1110,25 +1219,36 @@ $showing_to = min(
 
                 <option
                     value="<?php
-                    echo (int)$destination['destination_id'];
+
+                    echo (int)$destination[
+                        'destination_id'
+                    ];
+
                     ?>"
                     <?php
+
                     echo $destination_filter ===
                         (int)$destination['destination_id']
                         ? 'selected'
                         : '';
+
                     ?>
                 >
+
                     <?php
+
                     echo e(
                         $destination['destination_name']
                     );
+
                     ?>
+
                 </option>
 
             <?php endwhile; ?>
 
         </select>
+
 
         <button
             type="submit"
@@ -1136,6 +1256,7 @@ $showing_to = min(
         >
             Apply Filters
         </button>
+
 
         <a
             href="bookings.php"
@@ -1146,6 +1267,7 @@ $showing_to = min(
 
     </form>
 
+
     <!-- FILTERED REVENUE -->
 
     <div class="filtered-revenue">
@@ -1155,15 +1277,20 @@ $showing_to = min(
         </strong>
 
         <span>
+
             ৳<?php
+
             echo number_format(
                 $filtered_revenue,
                 0
             );
+
             ?>
+
         </span>
 
     </div>
+
 
     <!-- =====================================
          BOOKING TABLE
@@ -1189,6 +1316,7 @@ $showing_to = min(
 
         </p>
 
+
         <div class="table-wrapper">
 
             <table class="booking-admin-table">
@@ -1196,20 +1324,33 @@ $showing_to = min(
                 <thead>
 
                     <tr>
+
                         <th>#</th>
+
                         <th>Package</th>
+
                         <th>Traveler</th>
+
                         <th>Destination</th>
+
                         <th>Date</th>
+
                         <th>Travelers</th>
+
                         <th>Amount</th>
+
                         <th>Method</th>
+
                         <th>Status</th>
+
                         <th>Payment</th>
+
                         <th>Actions</th>
+
                     </tr>
 
                 </thead>
+
 
                 <tbody>
 
@@ -1237,27 +1378,34 @@ $showing_to = min(
 
                             <tr>
 
-                                <!-- BOOKING ID -->
+
+                                <!-- DISPLAY NUMBER -->
 
                                 <td class="booking-number">
 
                                     #<?php
-                                    echo (int)$booking['booking_id'];
+
+                                    echo $display_number++;
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- PACKAGE -->
 
                                 <td class="booking-package-name">
 
                                     <?php
+
                                     echo e(
                                         $booking['package_name']
                                     );
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- TRAVELER -->
 
@@ -1266,7 +1414,11 @@ $showing_to = min(
                                     <div class="booking-traveler-name">
 
                                         <?php
-                                        echo e($booking['name']);
+
+                                        echo e(
+                                            $booking['name']
+                                        );
+
                                         ?>
 
                                     </div>
@@ -1274,72 +1426,93 @@ $showing_to = min(
                                     <div class="booking-email">
 
                                         <?php
-                                        echo e($booking['email']);
+
+                                        echo e(
+                                            $booking['email']
+                                        );
+
                                         ?>
 
                                     </div>
 
                                 </td>
 
+
                                 <!-- DESTINATION -->
 
                                 <td>
 
                                     📍
+
                                     <?php
+
                                     echo e(
                                         $booking['destination_name']
                                     );
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- TRAVEL DATE -->
 
                                 <td>
 
                                     <?php
+
                                     echo e(
                                         $booking['travel_date']
                                     );
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- NUMBER OF TRAVELERS -->
 
                                 <td class="center-booking-value">
 
                                     <?php
+
                                     echo (int)$booking['travelers'];
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- AMOUNT -->
 
                                 <td class="booking-amount">
 
                                     ৳<?php
+
                                     echo number_format(
                                         (float)$booking['total_amount'],
                                         0
                                     );
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- PAYMENT METHOD -->
 
                                 <td>
 
                                     <?php
+
                                     echo e(
                                         $booking['method'] ?: '—'
                                     );
+
                                     ?>
 
                                 </td>
+
 
                                 <!-- BOOKING STATUS -->
 
@@ -1347,19 +1520,28 @@ $showing_to = min(
 
                                     <span
                                         class="booking-status <?php
-                                        echo e($booking_status);
+
+                                        echo e(
+                                            $booking_status
+                                        );
+
                                         ?>"
                                     >
 
                                         <?php
+
                                         echo e(
-                                            ucfirst($booking_status)
+                                            ucfirst(
+                                                $booking_status
+                                            )
                                         );
+
                                         ?>
 
                                     </span>
 
                                 </td>
+
 
                                 <!-- PAYMENT STATUS -->
 
@@ -1367,25 +1549,35 @@ $showing_to = min(
 
                                     <span
                                         class="payment-status <?php
-                                        echo e($payment_status);
+
+                                        echo e(
+                                            $payment_status
+                                        );
+
                                         ?>"
                                     >
 
                                         <?php
+
                                         echo e(
-                                            ucfirst($payment_status)
+                                            ucfirst(
+                                                $payment_status
+                                            )
                                         );
+
                                         ?>
 
                                     </span>
 
                                 </td>
 
+
                                 <!-- ACTIONS -->
 
                                 <td>
 
                                     <div class="booking-action-buttons">
+
 
                                         <?php if (
                                             $booking_status === 'pending'
@@ -1405,7 +1597,11 @@ $showing_to = min(
                                                     type="hidden"
                                                     name="booking_id"
                                                     value="<?php
-                                                    echo (int)$booking['booking_id'];
+
+                                                    echo (int)$booking[
+                                                        'booking_id'
+                                                    ];
+
                                                     ?>"
                                                 >
 
@@ -1419,6 +1615,7 @@ $showing_to = min(
                                             </form>
 
                                         <?php endif; ?>
+
 
                                         <?php if (
                                             $booking_status !== 'cancelled'
@@ -1441,7 +1638,11 @@ $showing_to = min(
                                                     type="hidden"
                                                     name="booking_id"
                                                     value="<?php
-                                                    echo (int)$booking['booking_id'];
+
+                                                    echo (int)$booking[
+                                                        'booking_id'
+                                                    ];
+
                                                     ?>"
                                                 >
 
@@ -1472,7 +1673,9 @@ $showing_to = min(
                                 colspan="11"
                                 class="no-data"
                             >
+
                                 No bookings found.
+
                             </td>
 
                         </tr>
@@ -1485,6 +1688,7 @@ $showing_to = min(
 
         </div>
 
+
         <!-- =====================================
              PAGINATION
         ===================================== -->
@@ -1493,25 +1697,31 @@ $showing_to = min(
 
             <div class="pagination">
 
+
                 <!-- PREVIOUS -->
 
                 <a
                     href="<?php
+
                     echo e(
                         bookingPageUrl(
                             max(1, $page - 1),
                             $pagination_params
                         )
                     );
+
                     ?>"
                     class="<?php
+
                     echo $page <= 1
                         ? 'disabled'
                         : '';
+
                     ?>"
                 >
                     Previous
                 </a>
+
 
                 <!-- PAGE NUMBERS -->
 
@@ -1533,36 +1743,48 @@ $showing_to = min(
 
                         <a
                             href="<?php
+
                             echo e(
                                 bookingPageUrl(
                                     $i,
                                     $pagination_params
                                 )
                             );
+
                             ?>"
                         >
+
                             <?php echo $i; ?>
+
                         </a>
 
                     <?php endif; ?>
 
                 <?php endfor; ?>
 
+
                 <!-- NEXT -->
 
                 <a
                     href="<?php
+
                     echo e(
                         bookingPageUrl(
-                            min($total_pages, $page + 1),
+                            min(
+                                $total_pages,
+                                $page + 1
+                            ),
                             $pagination_params
                         )
                     );
+
                     ?>"
                     class="<?php
+
                     echo $page >= $total_pages
                         ? 'disabled'
                         : '';
+
                     ?>"
                 >
                     Next
@@ -1573,6 +1795,7 @@ $showing_to = min(
         <?php endif; ?>
 
     </section>
+
 
     <!-- =====================================
          FOOTER
@@ -1585,12 +1808,16 @@ $showing_to = min(
         </div>
 
         <p>
+
             © 2026 TourBD — Tour Package & Travel Booking
             Management System. All rights reserved.
+
         </p>
 
         <p>
+
             Cox's Bazar · Sajek · Sylhet · Bandarban
+
         </p>
 
     </footer>
@@ -1598,4 +1825,5 @@ $showing_to = min(
 </main>
 
 </body>
+
 </html>
