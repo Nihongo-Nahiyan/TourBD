@@ -875,7 +875,7 @@ href="admin.css"
         </a>
 
 
-        <a href="destinations.php">
+        <a href="destination.php">
 
             🗺️ Destinations
 

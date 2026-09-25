@@ -60,10 +60,11 @@ a{
 
     padding:0 30px;
 
-    position:relative;
+    left:0;
+    right:0;
 
     z-index:10;
-
+    position:fixed;
 }
 
 
@@ -223,7 +224,7 @@ a{
     top:90px;
 
     left:0;
-
+    
     width:295px;
 
     min-height:
@@ -2613,6 +2614,7 @@ td{
 .admin-footer{
 
     background:#1b1816;
+    
 
     color:#cabfb7;
 
@@ -2632,7 +2634,7 @@ td{
     justify-content:space-between;
 
     gap:30px;
-
+    
 }
 
 
